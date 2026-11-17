@@ -1,0 +1,1988 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>危机路径终极看板</title>
+  <style>
+:root {
+  --bg: #f5f5f7;
+  --bg-pure: #ffffff;
+  --bg-dark: #000000;
+  --elev: #ffffff;
+  --line: rgba(0, 0, 0, 0.08);
+  --line-2: rgba(0, 0, 0, 0.16);
+  --text: #1d1d1f;
+  --text-dim: #6e6e73;
+  --muted: #6e6e73;
+  --faint: #86868b;
+  --accent: #0071e3;
+  --accent-hover: #0077ed;
+  --accent-dim: rgba(0, 113, 227, 0.08);
+  --danger: #c41230;
+  --ok: #247e3c;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 16px 40px rgba(0, 0, 0, 0.06);
+  --radius: 20px;
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --mono: "SF Mono", "Menlo", "IBM Plex Mono", monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg-pure);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+}
+body { min-height: 100vh; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button, input, select { font-family: inherit; }
+.wrap { width: min(1080px, calc(100% - 48px)); margin: 0 auto; }
+
+.topbar {
+  position: sticky; top: 0; z-index: 40;
+  background: rgba(251, 251, 253, 0.8);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+.topbar-inner {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  height: 52px;
+}
+.brand-kicker { display: none; }
+.brand h1 {
+  font-size: 17px; font-weight: 600; letter-spacing: -0.01em; line-height: 1;
+}
+.top-note { color: var(--muted); font-size: 12px; text-align: right; max-width: 420px; line-height: 1.35; }
+
+.hero {
+  padding: 84px 0 56px;
+  text-align: center;
+  max-width: 820px;
+  margin: 0 auto;
+}
+.hero-eyebrow {
+  font-size: 17px; font-weight: 600; color: var(--accent); margin-bottom: 10px;
+}
+.hero h1, .hero-title {
+  font-size: clamp(40px, 7vw, 64px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  margin: 0 0 18px;
+}
+.hero p, .hero-sub {
+  color: var(--text-dim);
+  font-size: 21px;
+  line-height: 1.4;
+  letter-spacing: -0.015em;
+  font-weight: 400;
+}
+.hero-note {
+  margin-top: 16px !important;
+  font-size: 14px !important;
+  color: var(--faint) !important;
+}
+
+.section-title {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 72px 0 12px;
+  text-align: center;
+}
+.section-lead {
+  color: var(--text-dim);
+  margin: 0 auto 28px;
+  max-width: 680px;
+  text-align: center;
+  font-size: 19px;
+  line-height: 1.45;
+}
+
+.scenarios { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin: 8px 0 28px; }
+#scenarios.scenarios { display: flex; flex-direction: column; gap: 0; }
+.sc-card {
+  text-align: left; background: var(--bg);
+  border: 1px solid transparent;
+  border-radius: 18px; padding: 20px 18px 22px; cursor: pointer; color: var(--text);
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+  min-height: 168px;
+}
+.sc-card:hover { transform: scale(1.01); }
+.sc-card.active {
+  background: var(--bg-pure);
+  box-shadow: var(--shadow);
+  border-color: rgba(0, 113, 227, 0.28);
+}
+.sc-id { font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 8px; letter-spacing: 0.01em; }
+.sc-card h3 { font-size: 17px; font-weight: 600; line-height: 1.25; letter-spacing: -0.015em; margin-bottom: 8px; }
+.sc-card p { font-size: 13px; color: var(--muted); line-height: 1.4; }
+.sc-card .analog { margin-top: 12px; font-size: 12px; color: var(--faint); }
+
+.controls {
+  display: grid; grid-template-columns: 1.15fr 1fr 1fr 1fr; gap: 12px;
+  margin: 0 0 28px;
+}
+.ctrl {
+  background: var(--bg); border-radius: 18px; padding: 18px 18px 16px;
+}
+.ctrl label { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+.ctrl label b { color: var(--text); font-weight: 600; font-size: 15px; }
+.ctrl input[type=range] { width: 100%; accent-color: var(--accent); }
+.ctrl .hint { font-size: 12px; color: var(--faint); margin-top: 8px; line-height: 1.4; }
+.ctrl.disabled { opacity: 0.4; pointer-events: none; }
+
+.chart-card {
+  background: var(--bg-pure);
+  border-radius: 28px;
+  padding: 28px 24px 16px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--line);
+}
+.chart-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 12px; }
+.chart-head h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
+.chart-sub { color: var(--muted); font-size: 14px; margin-top: 6px; line-height: 1.4; max-width: 52ch; }
+.chart-tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.btn {
+  background: #e8e8ed; color: var(--text); border: none;
+  border-radius: 980px; padding: 8px 16px; font-size: 14px; font-weight: 500; cursor: pointer;
+  transition: background .15s ease, transform .15s ease;
+}
+.btn:hover { background: #dcdce0; }
+.btn.primary { background: var(--accent); color: #fff; }
+.btn.primary:hover { background: var(--accent-hover); }
+.btn.ghost { background: transparent; }
+#chart { width: 100%; height: 440px; display: block; cursor: crosshair; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 4px 4px; }
+.leg { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); }
+.leg i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.scrub { display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: center; padding: 10px 4px 8px; }
+.scrub input { width: 100%; accent-color: var(--accent); }
+.phase-tag { font-size: 13px; color: var(--accent); font-weight: 600; }
+.month-tag { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.assets { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 8px; }
+.asset {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: none; background: var(--bg);
+  border-radius: 980px; padding: 7px 12px 7px 10px; cursor: pointer; color: var(--muted); font-size: 13px;
+  transition: background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.asset.on {
+  color: var(--text); background: var(--bg-pure);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--chip, var(--accent)) 45%, transparent);
+}
+.asset .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--chip); }
+.asset .pct { font-family: var(--mono); font-size: 11px; min-width: 4.5em; text-align: right; }
+.pct.up { color: var(--ok); }
+.pct.down { color: var(--danger); }
+.hint-line { font-size: 13px; color: var(--faint); margin: 4px 0 0; }
+
+.grid-2 { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; margin-top: 36px; }
+.panel {
+  background: var(--bg); border-radius: 24px; padding: 28px 26px 24px;
+}
+.panel h3 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+.panel h4 { font-size: 14px; color: var(--accent); margin: 18px 0 6px; font-weight: 600; }
+.panel p, .panel li { color: var(--text-dim); font-size: 15px; line-height: 1.5; }
+.panel ul { padding-left: 1.15em; }
+.panel li { margin: 6px 0; }
+.panel b { color: var(--text); font-weight: 600; }
+.kv { display: grid; grid-template-columns: 88px 1fr; gap: 6px 10px; font-size: 14px; margin: 8px 0 4px; }
+.kv dt { color: var(--muted); }
+.kv dd { color: var(--text); }
+
+.table-wrap {
+  overflow-x: auto; margin: 8px 0 20px;
+  background: var(--bg); border-radius: 20px;
+}
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { padding: 12px 16px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 500; font-size: 12px; }
+td { font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 13px; }
+td.name { font-family: var(--sans); font-size: 14px; font-weight: 500; }
+tr:last-child td { border-bottom: none; }
+.neg { color: var(--danger); }
+.pos { color: var(--ok); }
+
+.fork {
+  margin: 56px 0 24px; padding: 36px 40px;
+  background: #1d1d1f; color: #f5f5f7;
+  border-radius: 28px;
+}
+.fork h3 { font-size: 32px; font-weight: 600; letter-spacing: -0.022em; margin-bottom: 12px; color: #fff; }
+.fork p { color: #a1a1a6; font-size: 17px; line-height: 1.47; }
+
+.blocks { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.fineprint { color: var(--faint); font-size: 12px; line-height: 1.5; padding: 28px 0 72px; text-align: center; max-width: 680px; margin: 0 auto; }
+
+.compare-row { display: flex; align-items: center; gap: 8px; }
+.compare-row span { font-size: 13px; color: var(--muted); }
+.compare-row select {
+  background: #e8e8ed; color: var(--text); border: none;
+  border-radius: 980px; padding: 8px 12px; font-size: 13px;
+  appearance: none; padding-right: 28px;
+}
+
+.band { background: var(--bg); padding: 72px 0 24px; margin: 64px 0 0; }
+.band .wrap { }
+
+#tip {
+  position: fixed; display: none; z-index: 50;
+  min-width: 220px; max-width: 320px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: var(--text);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+}
+
+@media (max-width: 980px) {
+  .scenarios, .controls, .grid-2, .blocks { grid-template-columns: 1fr; }
+  .topbar-inner { height: auto; padding: 10px 0; }
+  .top-note { text-align: left; }
+  #chart { height: 340px; }
+  .wrap { width: min(1080px, calc(100% - 32px)); }
+  .hero { padding: 56px 0 36px; }
+  .fork { padding: 28px 22px; }
+  .chart-head { flex-direction: column; }
+}
+
+.wrap { width: min(1160px, calc(100% - 48px)); }
+.hero { max-width: 860px; }
+.badge {
+  display: inline-block; font-size: 11px; font-weight: 600;
+  color: var(--accent); background: var(--accent-dim);
+  border-radius: 980px; padding: 3px 8px; margin-left: 6px; vertical-align: middle;
+}
+.group-label {
+  font-size: 13px; color: var(--muted); font-weight: 600;
+  margin: 22px 0 10px; letter-spacing: -0.01em;
+}
+.scenarios { margin-bottom: 8px; }
+.diag {
+  background: var(--bg); border-radius: 24px; padding: 28px 26px 22px; margin: 8px 0 28px;
+}
+.diag h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 8px; }
+.diag .lead { color: var(--text-dim); font-size: 15px; margin-bottom: 16px; }
+.checks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; }
+.check {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 14px; color: var(--text); line-height: 1.4; cursor: pointer;
+}
+.check input { margin-top: 3px; accent-color: var(--accent); }
+.diag-result { margin-top: 16px; font-size: 14px; color: var(--text-dim); }
+.diag-result b { color: var(--text); font-weight: 600; }
+.toggles { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg {
+  display: inline-flex; background: #e8e8ed; border-radius: 980px; padding: 3px;
+}
+.seg button {
+  border: 0; background: transparent; color: var(--text);
+  padding: 6px 12px; border-radius: 980px; font-size: 13px; cursor: pointer;
+}
+.seg button.on { background: #fff; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+.haven { width: 100%; }
+.haven td:first-child { font-weight: 500; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.form-grid label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.form-grid select, .form-grid input[type="text"] {
+  width: 100%; background: #e8e8ed; border: 0; border-radius: 12px;
+  padding: 10px 12px; font-size: 14px; color: var(--text);
+}
+.preset-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.preset {
+  text-align: left; border: 1px solid transparent; background: #fff;
+  border-radius: 18px; padding: 16px 16px 14px; cursor: pointer;
+}
+.preset.on { border-color: var(--accent); background: var(--accent-dim); }
+.preset h3 { font-size: 16px; margin-bottom: 6px; }
+.preset p { font-size: 13px; color: var(--text-dim); line-height: 1.4; }
+.preset .fail { color: var(--danger); font-size: 12px; margin-top: 8px; }
+.note-bar {
+  background: #fff3cd; color: #3d3200; border-radius: 16px;
+  padding: 12px 16px; font-size: 13px; line-height: 1.5; margin: 0 0 16px;
+}
+.layers { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 8px 0 24px; }
+.layer { background: var(--bg); border-radius: 18px; padding: 16px 14px; }
+.layer.active { outline: 2px solid var(--accent); background: var(--accent-dim); }
+.layer h3 { font-size: 14px; margin-bottom: 6px; }
+.layer p { font-size: 12px; color: var(--text-dim); line-height: 1.45; }
+.dl-csv { margin-left: auto; }
+@media (max-width: 980px) {
+  .checks, .form-grid, .preset-grid, .layers { grid-template-columns: 1fr; }
+}
+
+.diag-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 8px;
+}
+.diag-head h2 { margin-bottom: 8px; }
+.diag-head .lead { margin-bottom: 0; }
+.diag-head .btn { flex: 0 0 auto; margin-top: 4px; }
+.sync-meta {
+  font-size: 13px; color: var(--muted); margin: 10px 0 14px; line-height: 1.5;
+}
+.sync-meta b { color: var(--text); font-weight: 600; }
+.sync-meta button {
+  border: 0; background: none; color: var(--accent); font-size: 13px;
+  cursor: pointer; padding: 0; margin-left: 10px;
+}
+.sign-note { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; line-height: 1.4; }
+.sign-pill {
+  display: inline-block; font-size: 11px; font-weight: 600;
+  border-radius: 980px; padding: 1px 7px; margin: 0 0 0 6px; vertical-align: middle;
+  background: #e8e8ed; color: var(--muted);
+}
+.sign-pill.supported { background: var(--accent-dim); color: var(--accent); }
+.sign-pill.weak { background: #fff3cd; color: #7a5b00; }
+.sign-pill.not_supported { background: #eee; color: #6e6e73; }
+.sign-pill.insufficient { background: #eee; color: #6e6e73; }
+
+.sync-mask {
+  position: fixed; inset: 0; z-index: 80;
+  background: rgba(0,0,0,0.32);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 48px 16px 32px; overflow: auto;
+}
+.sync-mask[hidden] { display: none; }
+.sync-sheet {
+  width: min(760px, 100%);
+  background: #fff; border-radius: 24px;
+  padding: 28px 26px 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+}
+.sync-sheet-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 10px;
+}
+.sync-sheet-head h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+.sync-sheet .lead { color: var(--text-dim); font-size: 15px; margin-bottom: 16px; }
+.sync-import { display: flex; gap: 10px; margin: 8px 0 14px; }
+.sync-paste-label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+#syncPaste {
+  width: 100%; border: 0; background: #e8e8ed; border-radius: 14px;
+  padding: 12px 14px; font-size: 13px; line-height: 1.45; color: var(--text);
+  resize: vertical; min-height: 120px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.sync-error { color: var(--danger); font-size: 13px; margin: 8px 0 12px; }
+.sync-summary { font-size: 14px; line-height: 1.55; margin: 8px 0 14px; color: var(--text); }
+.sync-row {
+  border-top: 1px solid var(--line); padding: 12px 0;
+  display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: flex-start;
+}
+.sync-row:last-child { border-bottom: 1px solid var(--line); }
+.sync-row .why { font-size: 13px; color: var(--text-dim); margin-top: 4px; line-height: 1.45; }
+.sync-row .src { font-size: 12px; margin-top: 4px; }
+.sync-row .src a { color: var(--accent); }
+.sync-actions { display: flex; gap: 10px; margin-top: 18px; }
+.sync-caveat { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+@media (max-width: 980px) {
+  .diag-head { flex-direction: column; }
+}
+
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand"><h1>危机路径终极看板</h1></div>
+    <p class="top-note">教学示意 · 曲线是人为校准的机制图，不是预测，也不是投资建议</p>
+  </div>
+</header>
+
+<main>
+<section class="wrap">
+  <section class="hero">
+    <p class="hero-eyebrow">教学模型</p>
+    <h1 class="hero-title">先判断断裂在哪一层，<br>再看资产怎么走</h1>
+    <p class="hero-sub">AI 股票下跌不等于已经发生经济危机。估值调整、需求衰退、信用断裂、资产负债表缩表、滞胀、流动性骤停和主权汇率压力，会逼出完全不同的曲线和策略。</p>
+    <p class="hero-note">所有路径都是示意，起点为冲击开始时的指数 100，看到第 48 个月。可以先勾选你看到的现象，再比较路径。</p>
+  </section>
+
+  <div class="diag">
+    <div class="diag-head">
+      <div>
+        <h2>先做诊断</h2>
+        <p class="lead">勾选当前更接近的现象。看板只会标出更吻合的路径，不会给出发生概率。任何一项都不能单独判定危机。</p>
+      </div>
+      <button class="btn primary" id="syncBtn" type="button">同步当前判断</button>
+    </div>
+    <div class="sync-meta" id="syncMeta"></div>
+    <div class="checks" id="signBox"></div>
+    <div class="diag-result" id="diagResult">尚未勾选。下面八条路径都可以直接比较。</div>
+  </div>
+
+  <div id="scenarios" class="scenarios"></div>
+
+  <div class="controls">
+    <div class="ctrl">
+      <label>示意波动幅度 <b id="sevVal">1.00×</b></label>
+      <input id="severity" type="range" min="0.7" max="1.4" step="0.05" value="1" />
+      <div class="hint">只放大或缩小相对 100 的偏离。1.0 是该路径的基准示意，不是历史校准。</div>
+    </div>
+    <div class="ctrl">
+      <label>政策响应速度 <b id="spdVal">中性</b></label>
+      <input id="speed" type="range" min="0.6" max="1.4" step="0.05" value="1" />
+      <div class="hint">越快，底部和修复越提前；越慢，冲击期拖得越长。</div>
+    </div>
+    <div class="ctrl">
+      <label>政策力度 <b id="strVal">中性</b></label>
+      <input id="strength" type="range" min="0.6" max="1.4" step="0.05" value="1" />
+      <div class="hint">同样“加强政策”，在普通衰退、滞胀、主权危机和资产负债表衰退里，对债券、黄金和股票的含义不同。</div>
+    </div>
+    <div class="ctrl" id="creditCtrl">
+      <label>信用传导程度 <b id="crdVal">0%</b></label>
+      <input id="credit" type="range" min="0" max="1" step="0.05" value="0" />
+      <div class="hint">仅用于资本开支需求衰退。0% 更像 2000 年，100% 则滑向 2008 年那样的信用危机。</div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-head">
+      <div>
+        <h2 id="chartTitle">局部估值调整</h2>
+        <div class="chart-sub" id="chartSub"></div>
+      </div>
+      <div class="chart-tools">
+        <div class="seg" id="unitSeg">
+          <button data-unit="nom" class="on">名义</button>
+          <button data-unit="real">实际购买力</button>
+        </div>
+        <div class="seg" id="axisSeg">
+          <button data-axis="auto" class="on">纵轴自适应</button>
+          <button data-axis="fixed">固定纵轴</button>
+        </div>
+        <div class="compare-row">
+          <span>对比路径</span>
+          <select id="compare"><option value="">不对比</option></select>
+        </div>
+        <button class="btn" id="cpiBtn">显示物价</button>
+        <button class="btn primary" id="playBtn">播放</button>
+        <button class="btn" id="resetBtn">恢复默认</button>
+        <button class="btn dl-csv" id="csvBtn">下载数据</button>
+      </div>
+    </div>
+    <div class="note-bar" id="unitNote">当前是美元名义示意指数。实际购买力会扣除这条路径下的示意物价，物价本身也是人为设定的。</div>
+    <svg id="chart" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="资产路径图"></svg>
+    <div class="legend" id="legend"></div>
+    <div class="scrub">
+      <input id="monthRange" type="range" min="0" max="48" step="1" value="0" />
+      <span class="phase-tag" id="phaseTag">冲击期</span>
+      <span class="month-tag" id="monthTag">第 0 个月</span>
+    </div>
+  </div>
+
+  <div id="assets" class="assets"></div>
+  <p class="hint-line">点按资产即可显示或隐藏曲线。虚线是对比路径。方向键可逐月查看，空格键播放或暂停。宽基股票与 AI 科技有成分重叠，不能看成完全独立的两类资产。</p>
+
+  <h2 class="section-title">这条路径上，避风港还成不成立</h2>
+  <p class="section-lead">同一资产在不同断裂层里角色完全不同。不要使用“危机到来就买黄金、国债或比特币”这种单一规则。</p>
+  <div class="table-wrap"><table class="haven" id="havenTable"></table></div>
+
+  <div class="grid-2">
+    <article class="panel" id="aboutPanel"></article>
+    <article class="panel" id="strategyPanel"></article>
+  </div>
+
+  <h2 class="section-title">可选：你的约束会改变核对顺序</h2>
+  <p class="section-lead">空着就不会假定你的情况。填写后，只会改策略里的侧重点，不会改曲线，也不会生成专属仓位。</p>
+  <article class="panel">
+    <div class="form-grid">
+      <div>
+        <label for="levSel">是否有杠杆、保证金或浮动利率债务</label>
+        <select id="levSel">
+          <option value="">不填写</option>
+          <option value="yes">有</option>
+          <option value="no">没有</option>
+        </select>
+      </div>
+      <div>
+        <label for="spendSel">未来 12 个月是否有较大的确定支出</label>
+        <select id="spendSel">
+          <option value="">不填写</option>
+          <option value="yes">有</option>
+          <option value="no">没有</option>
+        </select>
+      </div>
+      <div>
+        <label for="ccySel">主要支出币种</label>
+        <select id="ccySel">
+          <option value="">不填写</option>
+          <option value="usd">美元</option>
+          <option value="cny">人民币</option>
+          <option value="other">其他</option>
+        </select>
+      </div>
+      <div>
+        <label for="horSel">可承受的持有期限</label>
+        <select id="horSel">
+          <option value="">不填写</option>
+          <option value="lt1">不到 1 年</option>
+          <option value="y13">1 到 3 年</option>
+          <option value="gt3">3 年以上</option>
+        </select>
+      </div>
+    </div>
+  </article>
+
+  <h2 class="section-title">当前设定下的路径摘要</h2>
+  <p class="section-lead">下表会随路径和滑杆一起变化。最大回撤、见底时间和回到起点，都是从这个示意模型里算出来的，用来比较结构，不是对未来的承诺。</p>
+  <div class="table-wrap"><table id="statTable"></table></div>
+
+  <h2 class="section-title">对照组合：看同一套搭配会在哪里失效</h2>
+  <p class="section-lead">这些权重来自对照材料里的示意搭配，只用来做压力比较，不是推荐仓位。默认按起点一次性配好后持有，中途不调仓。可以把它们放到不同路径下，看哪里会失配。</p>
+  <div class="preset-grid" id="presetBox"></div>
+  <div class="table-wrap" style="margin-top:16px"><table id="presetTable"></table></div>
+
+  <div class="fork">
+    <h3>如果起点是 AI 泡沫破裂</h3>
+    <p>先不要把它默认写成一次经济危机。更关键的分叉是：它只停留在估值调整，还是已经传到资本开支、就业和需求，再进一步顺着杠杆、私募信贷或银行资产负债表演变成信用危机，或者陷入长期还债和缩表。若破裂时通胀仍高、政策不能放松，还要对照滞胀，因为那时长债会失去避险功能。把“资本开支需求衰退”里的信用传导从 0% 拖到 100%，可以直接看见从 2000 年走向 2008 年时曲线如何改写。</p>
+  </div>
+
+  <h2 class="section-title">冲击可能经过的五层传导</h2>
+  <p class="section-lead">这些是可能发生的路径，不是必经步骤。传导到的层级越多，经济影响通常越广。当前路径会高亮它主要落在哪一层。</p>
+  <div class="layers" id="layers">
+    <article class="layer" data-layer="1"><h3>估值与融资</h3><p>增长或利润低于原先定价，相关股权先跌。股价、经营和融资条件可能不同步。</p></article>
+    <article class="layer" data-layer="2"><h3>资本开支与供应链</h3><p>云、模型和数据中心放缓投资，可能传到芯片、电力、建设和上下游，但不等于所有行业同时下降。</p></article>
+    <article class="layer" data-layer="3"><h3>就业与消费</h3><p>招聘、奖金和财富效应可能减弱。这是否变成广泛衰退，取决于相关活动和人群在整体经济中的比重。</p></article>
+    <article class="layer" data-layer="4"><h3>债务与金融体系</h3><p>若损失主要由股权承担，不一定变成系统性危机。若依赖借债、抵押和私募信贷，才可能出现违约和被迫出售。</p></article>
+    <article class="layer" data-layer="5"><h3>政策与第二次冲击</h3><p>降息不自动等于资产立刻上涨。能源、财政、汇率和主权问题可以同时出现，但不能都算成 AI 造成的。</p></article>
+  </div>
+
+  <h2 class="section-title">三份材料如何合并</h2>
+  <p class="section-lead">这份看板统一了三份判断说明里仍然成立的部分，也明确丢掉了容易误导的部分。</p>
+  <div class="blocks">
+    <article class="panel">
+      <h3>保留下来的判断</h3>
+      <p>先诊断断裂层，再谈策略。把局部估值调整单独列出，因为股价下跌不等于经济危机。把资产负债表衰退从普通需求衰退里分出来，因为它更像长期阴跌，宽松往往像推绳子。把流动性骤停后的强干预，和真正的信用崩溃分开。策略按阶段写成：看什么、先核对什么、可考虑什么、代价是什么、何时失效。可以切换名义和实际购买力，并看同一套对照组合在不同路径下哪里会失效。</p>
+    </article>
+    <article class="panel">
+      <h3>没有采用的做法</h3>
+      <p>没有把某一份材料里的具体仓位比例写成建议，也没有给路径或策略打出精确的匹配分数。没有把不同时钟的关键点混在一张图里。没有把未独立核对的机构数字或报道写成已发生的事实。曲线仍然是人为示意，用来比较方向、深度和节奏，不是回测，也不是预测。</p>
+    </article>
+  </div>
+
+  <h2 class="section-title">模型边界</h2>
+  <p class="section-lead">使用时请记住下面这些限制。看板把缺陷直接摆出来，是为了避免把演示曲线看成预测曲线。</p>
+  <div class="blocks">
+    <article class="panel">
+      <h3>它做了什么</h3>
+      <p>把历史上反复出现的机制写成可对比的示意路径：谁先跌、谁先被卖掉、政策来了之后谁先稳住、不同路径里避风港是否还成立。时间轴统一成冲击开始后的 48 个月，起点统一成 100。各路径的冲击深度本身不同，这是机制差异的一部分；比较时请看形状和先后顺序，不要把终点高低直接当成预测优劣。</p>
+    </article>
+    <article class="panel">
+      <h3>它没有做什么</h3>
+      <p>没有纳入交易成本、税收、个股存续、平台风险和真实时序数据。股票、债券、现金按含利息或分红的示意总回报处理，黄金、商品和房价是价格口径，房地产不含租金，因此不能直接当作同口径的可投资回报。加密在 2000 年并不存在，比特币在主权危机中的角色仍不稳定。中国资产还要另看国内政策。这里没有任何概率、阈值或买卖建议。</p>
+    </article>
+  </div>
+
+  <article class="panel" style="margin: 8px 0 12px;">
+    <h3>资料怎么用</h3>
+    <p>其中一份材料引用了国际货币基金组织 2026 年 10 月关于 AI 生态与金融稳定的研究、美联储理事 2026 年 11 月 16 日关于 AI 与金融稳定的演讲，以及美联储 2026 年 11 月金融稳定报告中的市场联系人意见。这些至多说明风险结构和传导渠道受到关注，不代表危机已经发生或必然发生；其中“受访者意见”尤其不能当成官方概率。请自行打开原文核对。历史对照包括 2000–2002 年互联网泡沫、2008 年金融危机、1970 年代滞胀与 2022 年的部分特征、1990 年代日本的资产负债表调整、2020 年 3 月流动性冲击，以及部分主权和汇率压力。它们是事后参照，不能证明能提前预测下一次。</p>
+  </article>
+
+  <p class="fineprint">起点为冲击开始时的指数 100。播放和拖动只改变观察时点，不改变已经生成的路径。本文件可完全离线打开。最后说明一次：这是教学用的情景比较工具，不构成任何投资建议。</p>
+</section>
+</main>
+<div id="tip"></div>
+
+<div class="sync-mask" id="syncMask" hidden>
+  <div class="sync-sheet" role="dialog" aria-modal="true" aria-labelledby="syncTitle">
+    <div class="sync-sheet-head">
+      <h2 id="syncTitle">同步当前判断</h2>
+      <button class="btn" id="syncClose" type="button">关闭</button>
+    </div>
+    <p class="lead">把每天发给你的判断文件导入，或直接粘贴同步稿。预览后需要你确认，才会改诊断勾选。这只是对照公开信息的教学判断，不是危机已经发生的结论，也不会自动选定路径。</p>
+    <div class="sync-import">
+      <button class="btn primary" id="syncFileBtn" type="button">导入判断文件</button>
+      <input type="file" id="syncFile" accept="application/json,.json,text/plain" hidden />
+    </div>
+    <label class="sync-paste-label" for="syncPaste">或粘贴同步稿</label>
+    <textarea id="syncPaste" rows="7" placeholder="在这里粘贴 JSON 同步稿"></textarea>
+    <div class="sync-import">
+      <button class="btn" id="syncParseBtn" type="button">预览这份判断</button>
+    </div>
+    <div class="sync-error" id="syncError" hidden></div>
+    <div id="syncPreview"></div>
+    <div class="sync-actions" id="syncActions" hidden>
+      <button class="btn primary" id="syncApplyBtn" type="button">采用这次判断</button>
+      <button class="btn" id="syncCancelBtn" type="button">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const HORIZON = 48;
+const ASSETS = [
+  { id: "cash", name: "现金 / 货币市场", short: "现金", color: "#8e8e93", group: "避险", ret: "含短期利息的示意总回报" },
+  { id: "usd", name: "美元", short: "美元", color: "#0a84ff", group: "货币", ret: "示意汇率或美元指数，不是含息现金" },
+  { id: "fxCash", name: "外币现金（折本币）", short: "外币现金", color: "#5e5ce6", group: "货币", ret: "示意外币本金按汇率折算，需同时看原币与汇率" },
+  { id: "stBond", name: "短债 / 短期国债", short: "短债", color: "#30d158", group: "利率", ret: "含利息的示意总回报" },
+  { id: "ltBond", name: "长债 / 长期高信用国债", short: "长债", color: "#64d2ff", group: "利率", ret: "含利息的示意总回报；受冲击国自身的国债不能与此混为一谈" },
+  { id: "gold", name: "黄金", short: "黄金", color: "#ffd60a", group: "实物", ret: "示意价格，不含借出收益" },
+  { id: "equity", name: "股票（宽基）", short: "宽基股票", color: "#0071e3", group: "权益", ret: "假设含分红的示意指数；与 AI 科技有成分重叠" },
+  { id: "ai", name: "AI / 高估值科技", short: "AI科技", color: "#bf5af2", group: "权益", ret: "假设含分红的示意指数，不是单一个股" },
+  { id: "defensive", name: "防御 / 红利与必需消费", short: "防御红利", color: "#32ade6", group: "权益", ret: "假设含分红的示意指数" },
+  { id: "hy", name: "高收益信用债", short: "信用债", color: "#ff9f0a", group: "信用", ret: "含利息、也含违约和利差变化的示意总回报" },
+  { id: "btc", name: "比特币", short: "比特币", color: "#ffd60a", group: "加密", ret: "示意价格；在多数冲击里更像高弹性风险资产" },
+  { id: "alts", name: "加密山寨币", short: "山寨币", color: "#ff453a", group: "加密", ret: "示意价格，比比特币更脆" },
+  { id: "oil", name: "原油 / 工业商品", short: "工业商品", color: "#ff6961", group: "商品", ret: "示意价格，不同商品差异很大" },
+  { id: "re", name: "房地产（房价）", short: "房地产", color: "#ac8e68", group: "实物", ret: "示意房价，不含租金、税费和持有成本" },
+  { id: "ashare", name: "A股", short: "A股", color: "#ff375f", group: "中国", ret: "假设含分红的示意指数，随后更看国内政策" },
+  { id: "cnbond", name: "中国国债", short: "中国国债", color: "#00c7be", group: "中国", ret: "含利息的示意总回报；国内信用若出问题，避险属性会打折" }
+];
+
+const DEFAULT_ON = ["cash", "gold", "ltBond", "equity", "ai", "btc"];
+
+const SIGNS = [
+  { id: "aiDrop", text: "AI 或高估值科技明显下跌", map: { local: 2, capex: 2, credit: 1, balance: 1, stagflation: 1, liquidity: 1, sovereign: 1, repair: 1 } },
+  { id: "broadOk", text: "就业、消费和银行信贷大体仍稳，损失主要留在股东之间", map: { local: 4, repair: 2 } },
+  { id: "capexCut", text: "资本开支、订单或相关供应链明显下修，并开始传到非 AI 行业", map: { capex: 4, balance: 2, credit: 1 } },
+  { id: "creditBreak", text: "融资断裂、违约、赎回或信用利差失控", map: { credit: 5, liquidity: 2 } },
+  { id: "dashCash", text: "下跌以周甚至日计算，优质资产也先被卖掉换现金", map: { liquidity: 5, credit: 3 } },
+  { id: "policyFast", text: "政策几乎立刻提供流动性、担保或大规模财政支持", map: { liquidity: 4, repair: 1 } },
+  { id: "debtMin", text: "企业或家庭转向还债和缩表，宽松之后信贷仍不扩张，物价低迷", map: { balance: 5 } },
+  { id: "stockBondDown", text: "股票和长期国债一起跌，通胀黏住，政策无法痛快放松", map: { stagflation: 5, sovereign: 2 } },
+  { id: "commodityUp", text: "能源、食品或关键商品因供给约束而上涨", map: { stagflation: 3 } },
+  { id: "havenFail", text: "风险资产下跌时，国债收益率不降反升，本币走弱", map: { sovereign: 5, stagflation: 1 } },
+  { id: "goldSold", text: "黄金先被卖掉换现金，而不是立刻保护组合", map: { credit: 2, liquidity: 3 } },
+  { id: "earnBack", text: "存活公司的现金流和订单开始回升，估值回到可计算的水平", map: { repair: 5, local: 1, capex: 1 } }
+];
+
+const PRESETS = [
+  { id: "divBond", name: "国债与红利对照", hint: "更贴近资本开支泡沫、信用仍在时的常见对照；滞胀或信用崩溃时容易失效。", fail: ["stagflation", "credit"], w: { defensive: 0.35, ltBond: 0.40, gold: 0.10, cash: 0.15 } },
+  { id: "deflation", name: "长债与黄金对照", hint: "更贴近信用危机后政策转向的对照；滞胀里长债会成为负担。", fail: ["stagflation"], w: { defensive: 0.10, ltBond: 0.45, gold: 0.25, cash: 0.20 } },
+  { id: "stag", name: "黄金、商品与短债对照", hint: "更贴近滞胀对照；若实际走向缩表通缩，商品会拖后腿。", fail: ["balance"], w: { defensive: 0.15, gold: 0.35, oil: 0.30, cash: 0.20 } },
+  { id: "bs", name: "超长债与现金流对照", hint: "更贴近资产负债表衰退对照；一旦再通胀或利率上行，长久期损伤会很大。", fail: ["stagflation", "liquidity"], w: { ai: 0.05, defensive: 0.25, ltBond: 0.50, gold: 0.10, cash: 0.10 } },
+  { id: "barbell", name: "现金与风险资产杠铃对照", hint: "更贴近快速救助后的流动性休克；若底部被拉长且没有强干预，风险一端会长期受损。", fail: ["capex", "balance"], w: { ai: 0.30, defensive: 0.15, ltBond: 0.10, gold: 0.20, cash: 0.25 } },
+  { id: "sixty", name: "传统股债六四分对照", hint: "只作为习惯组合的对照，不是推荐。信用危机、滞胀和长期缩表里都可能明显失配。", fail: ["credit", "stagflation", "balance"], w: { ai: 0.35, defensive: 0.25, ltBond: 0.40 } }
+];
+
+const SCENARIOS = {
+  local: {
+    id: "local",
+    code: "01",
+    group: "是否已经成了危机",
+    title: "局部估值调整",
+    blurb: "AI 或科技股价大跌，但就业、信贷和大部分经济仍稳。",
+    analog: "参照：某些年份的科技股熊市，而不是一次全面经济危机",
+    phases: [6, 14, 26],
+    creditBlend: false,
+    policyMode: "mild",
+    policyNote: "如果损失主要留在股东之间，政策不一定会大幅转向。曲线对政策力度不那么敏感。",
+    about: "这是必须先单独看的一层。AI 股票下跌本身不等于整体经济危机。当收入或增长低于市场原先定价，相关股价可以大幅调整，但就业、消费、银行信贷和其他行业需求仍可能稳定。损失主要由股权投资者承担，没有形成大范围违约。",
+    signs: ["AI 或高估值科技明显下跌，宽基指数的跌幅明显更浅，或主要来自指数集中度", "资本开支或有下修，但就业、消费和银行信贷没有持续恶化", "信用利差走阔有限，融资市场仍可运转", "国债、黄金和现金不必出现同一方向的“危机定价”"],
+    watch: "AI 企业营收、自由现金流和资本开支指引，宽基股票相对 AI 的表现，信用利差，就业和消费。要区分股价变化、企业真实经营变化和融资条件变化，这三者可能不同步。",
+    mechanism: "重新定价发生在股权层。财富效应可能存在，但还不足以打断整体支出和信用。宽基股票会受指数集中度影响，所以“只跌了科技、指数却很稳”或“指数跟跌但其他行业仍稳”都可能出现。",
+    disprove: "如果支出、就业或信贷持续恶化，说明冲击可能已不再局限于局部。反过来，股价先跌也不等于已经正确预测了衰退。",
+    fail: "把局部调整当成全面危机，过早大幅提高现金、卖掉仍与自身期限匹配的资产，可能付出机会成本；但若集中度很高，宽基指数也可能看起来“很像危机”。",
+    strategies: {
+      shock: { check: "先列出未来确定的支出、还债和可动用资金，并核对组合里直接、间接或重复持有的 AI 敞口。", consider: "策略的第一步不是寻找必涨资产，而是看自己能不能按原定期限拿住，会不会因为集中度而被同一批公司伤害两次。", cost: "立刻卖出可能锁定损失；什么都不做则可能让单一主题继续主导组合。" },
+      policy: { check: "一起看经营数据、资本开支指引和融资条件，而不只看股价反弹。", consider: "若证据仍支持“损失留在股东之间”，不必仅仅因为科技股跌过，就把长债或黄金当成必须加仓的避风港。", cost: "等数据确认时价格可能已经变了；过早把波动写成危机，也会打乱原有配置。" },
+      stabilize: { check: "看估值是否回到可计算的水平，头部公司的现金流和订单是否稳住。", consider: "修复如果出现，通常先来自有自由现金流、不太依赖再融资的公司，而不是最会讲故事的那一批。", cost: "分散会降低参与单一板块反弹的程度。" },
+      cycle: { check: "把技术是否有用，和某家公司或某段估值能否兑现，分开看。", consider: "行业还在，不代表旧价格还在，也不代表所有相关资产都会回到原高点。", cost: "过早宣布“已经结束”或“永远不会修复”，都可能与自己的持有期限冲突。" }
+    },
+    china: "A股和中国国债在这种局部冲击里，不一定跟随美股科技同步走出“危机路径”，更取决于国内自身的增长、流动性和政策。模型只给方向性示意。",
+    paths: {
+      cash: [[0,100],[12,102],[24,104],[48,108]],
+      usd: [[0,100],[6,102],[12,103],[24,101],[48,100]],
+      fxCash: [[0,100],[6,99],[12,98],[24,100],[48,101]],
+      stBond: [[0,100],[12,103],[24,106],[48,110]],
+      ltBond: [[0,100],[6,102],[12,104],[24,106],[48,108]],
+      gold: [[0,100],[6,101],[12,103],[24,106],[48,110]],
+      equity: [[0,100],[3,94],[9,88],[18,90],[24,94],[36,102],[48,110]],
+      ai: [[0,100],[3,80],[9,68],[18,70],[24,78],[36,90],[48,102]],
+      defensive: [[0,100],[6,98],[12,100],[24,106],[48,114]],
+      hy: [[0,100],[6,98],[12,97],[24,101],[48,108]],
+      btc: [[0,100],[3,78],[9,62],[18,68],[24,80],[36,92],[48,105]],
+      alts: [[0,100],[3,62],[9,45],[18,50],[24,62],[36,75],[48,88]],
+      oil: [[0,100],[6,98],[12,97],[24,100],[48,104]],
+      re: [[0,100],[12,99],[24,101],[48,106]],
+      ashare: [[0,100],[6,94],[12,90],[24,96],[48,104]],
+      cnbond: [[0,100],[12,102],[24,104],[48,106]],
+      cpi: [[0,100],[12,102],[24,103],[48,105]]
+    }
+  },
+  capex: {
+    id: "capex",
+    code: "02",
+    group: "需求与信用",
+    title: "资本开支需求衰退",
+    blurb: "投资大幅回吐并传到就业和盈利，但金融系统大体还在。",
+    analog: "参照：2000–2002 互联网泡沫后的衰退，而不是银行业崩溃",
+    phases: [8, 18, 30],
+    creditBlend: true,
+    policyMode: "standard",
+    policyNote: "降息和财政能缓冲经济，但科技股往往要经历更长的底部。把下方信用传导从 0% 拖到 100%，可以看到它如何滑向信用危机。",
+    about: "这类路径的起点不是银行倒闭，而是定价和资本开支走得太远。当收入和投资回报对不上估值，企业削减开支，再传到供应链、就业和居民消费。经济可能衰退，但只要信用链条没有断，杀伤会集中在泡沫相关资产和需求链，而不是整个支付体系。",
+    signs: ["信用利差走阔，但没有失控，银行间市场仍可运转", "跌幅明显集中在高估值成长股和相关资本开支链条，随后才传到更宽的需求", "长债利率通常下行，更像在为增长放缓定价", "企业盈利下修主要来自投资和订单收缩，而不是大面积坏账"],
+    watch: "资本开支实际值与指引、订单和取消、就业与工时、消费、非 AI 行业盈利、信用利差和贷款标准。订单不等于收入，指引不等于最终支出。",
+    mechanism: "财富效应和资本开支收缩削弱需求，但存款和支付体系仍在。资金会离开故事，转向现金、国债和后来被证伪较少的现金流资产。如果泡沫资产里杠杆不高，这会更像一场长熊，而不是突然停摆。",
+    disprove: "若其他领域的投资和消费足以抵消 AI 支出下降，就可能没有全面衰退。若融资链和私募信贷开始断裂，它会滑向信用危机。若通胀黏住，长债的避险功能也会失效。",
+    fail: "在主跌段用杠杆抄泡沫核心，失败率较高。把还没有坏的信用市场当成已经崩溃，也可能让人错过国债和高质量现金流资产仍然有效的阶段。",
+    strategies: {
+      shock: { check: "优先测算收入中断时的现金流，列出确定性支出和债务到期，检查资产能否变现。", consider: "历史上更常见的是先保留现金和短债，避免在主跌段用杠杆抄泡沫核心。防御股和高质量债券通常比成长股稳。", cost: "提高流动性可能减少以后参与修复的程度。" },
+      policy: { check: "政策转向后，先看长债和高质量信用是否已经定价了一部分宽松，再看股票里谁的自由现金流能支撑再融资。", consider: "先稳住的多是不太依赖再融资的公司，而不是最会讲故事的那一批。", cost: "长债的较好价格，往往出现在市场还在为衰退定价的时候，而不是确认复苏之后。" },
+      stabilize: { check: "识别信号是资本开支继续下降，但估值已经回到可计算的水平，头部公司开始用现金回购或整合行业。", consider: "底部通常是磨出来的，而不是一天反转。", cost: "等信号更清楚时，最快的一截反弹可能已经过了。" },
+      cycle: { check: "技术本身是否仍在被使用，和旧的资本开支计划是否还合理，是两件事。", consider: "如果技术是真的、只是投资过热，存活下来的公司可能在数年后重新定价。行业还在，价格体系已经换了一套。", cost: "新周期里的赢家，不必是上一轮最贵的那一批。" }
+    },
+    china: "A股会受风险偏好和出口、外需拖累，但路径很大程度上取决于国内政策。中国国债在这种全球增长放缓里，有时会有避险需求。这些都比美股路径更不确定。",
+    paths: {
+      cash: [[0,100],[6,101],[12,103],[24,107],[48,112]],
+      usd: [[0,100],[6,104],[12,108],[24,103],[48,98]],
+      fxCash: [[0,100],[6,97],[12,93],[24,98],[48,103]],
+      stBond: [[0,100],[6,103],[12,107],[24,112],[48,118]],
+      ltBond: [[0,100],[3,102],[12,110],[24,120],[36,126],[48,128]],
+      gold: [[0,100],[6,97],[12,96],[24,110],[36,125],[48,140]],
+      equity: [[0,100],[3,88],[9,72],[18,58],[24,55],[36,68],[48,82]],
+      ai: [[0,100],[3,78],[9,52],[18,36],[24,30],[30,32],[36,42],[48,55]],
+      defensive: [[0,100],[6,94],[12,88],[24,92],[36,102],[48,112]],
+      hy: [[0,100],[6,93],[12,88],[24,90],[36,100],[48,108]],
+      btc: [[0,100],[3,70],[9,45],[18,32],[24,30],[36,48],[48,70]],
+      alts: [[0,100],[3,55],[9,28],[18,16],[24,14],[36,22],[48,35]],
+      oil: [[0,100],[6,92],[12,82],[24,88],[36,100],[48,108]],
+      re: [[0,100],[12,96],[24,94],[36,100],[48,108]],
+      ashare: [[0,100],[6,85],[12,72],[24,68],[36,80],[48,95]],
+      cnbond: [[0,100],[12,104],[24,110],[48,116]],
+      cpi: [[0,100],[12,101],[24,103],[36,105],[48,106]]
+    }
+  },
+  credit: {
+    id: "credit",
+    code: "03",
+    group: "需求与信用",
+    title: "信用与金融危机",
+    blurb: "杠杆断裂，先卖一切换现金，随后才谈估值。",
+    analog: "参照：2008 全球金融危机",
+    phases: [6, 14, 28],
+    creditBlend: false,
+    policyMode: "standard",
+    policyNote: "救援来得越快，风险资产后来的弹性越大；来得越慢，房地产和信用的损伤越深。",
+    about: "核心不是某类资产贵了，而是信用中介出了问题。银行、影子银行、项目融资或私募信贷无法展期，资产负债被迫降杠杆，市场会出现“只有现金才是资产”的阶段。这时相关性会升到接近同步下跌，连黄金、比特币这类后来被当作避险的东西，也可能先被卖掉。",
+    signs: ["银行间拆借、信用利差或融资市场出现断裂迹象", "金融机构、项目或重要信贷主体出现兑付、倒闭或被救助", "短期内各类资产一起跌，投资者在卖能卖掉的东西", "问题很快从资产价格传到就业、违约和房地产"],
+    watch: "高收益债利差、贷款标准、到期债务、违约、保证金、基金赎回、私募信贷和项目融资敞口。部分数据低频或不透明，不能把没有公开数据当成没有风险。",
+    mechanism: "保证金和赎回形成螺旋，流动性比基本面更先决定价格。美元往往因为全球缺美元而升值。待政策提供担保、流动性和资本重组后，才轮到债券、黄金和股票先后企稳。房产、私募的损失常会滞后账面化。",
+    disprove: "如果相关债务规模有限、损失主要由权益承担并被资本吸收，股价大跌也不必然变成系统性信用危机。若救助极快且坏账不深，它也可能更接近流动性骤停后的强干预。",
+    fail: "不要假设黄金或加密会立刻保护组合。降低杠杆有助于限制被迫出售，但也可能要求提前变现并承担损失。",
+    strategies: {
+      shock: { check: "先检查借款合同、保证金、债务到期日和交易对手，避免依赖单一融资来源。", consider: "历史上最有效的往往是现金、短债和真正能迅速变现的高质量政府信用。", cost: "为了保住流动性而卖出，可能锁定位于底部附近的资产；但不处理杠杆，风险是被迫在更差的价格卖出。" },
+      policy: { check: "看救助和降息是否形成可信路径，信用利差是否从极端位置回到能交易的水平。", consider: "长债和黄金常会先走强。股票和信用债的修复通常晚一步，而且先修复的是流动性最好、资产负债表最稳的资产。", cost: "政策消息可以很快反映在价格里，但坏账和房地产可能还在继续计提。" },
+      stabilize: { check: "信用利差、贷款标准和违约是否不再恶化，往往比股价本身更值得看。", consider: "房地产和私募可能仍滞后。如果危机源头恰好是 AI 相关信贷，这个板块的修复会慢于普通的流动性反弹。", cost: "把政策反弹当成信用已经修复，可能再次遇到融资压力。" },
+      cycle: { check: "看杠杆被清掉的领域是否还会长期受压抑，以及新的监管和资本要求。", consider: "新周期里，便宜的是活下来的资产负债表，而不一定是上一轮的增长故事。", cost: "过早用高杠杆参与修复，会把一次危机变成两次。" }
+    },
+    china: "2008 年 A股同样深度下跌，随后国内大规模刺激带来快速反弹。模型里的 A股修复偏这一历史经验，但下一次政策空间、地产环境和外需条件都可能不同。",
+    paths: {
+      cash: [[0,100],[2,100],[12,101],[24,103],[48,108]],
+      usd: [[0,100],[2,106],[6,112],[12,108],[24,102],[48,98]],
+      fxCash: [[0,100],[2,95],[6,89],[12,93],[24,99],[48,103]],
+      stBond: [[0,100],[3,104],[12,110],[24,114],[48,116]],
+      ltBond: [[0,100],[1,97],[6,108],[12,116],[24,122],[48,118]],
+      gold: [[0,100],[2,88],[6,92],[12,115],[24,135],[36,148],[48,155]],
+      equity: [[0,100],[2,80],[6,62],[12,50],[18,55],[24,72],[36,90],[48,105]],
+      ai: [[0,100],[2,70],[6,48],[12,38],[24,60],[36,85],[48,110]],
+      defensive: [[0,100],[2,90],[6,78],[12,70],[24,85],[36,100],[48,112]],
+      hy: [[0,100],[2,82],[6,60],[12,48],[24,70],[36,90],[48,105]],
+      btc: [[0,100],[1,75],[3,50],[6,42],[12,55],[24,90],[36,125],[48,150]],
+      alts: [[0,100],[1,60],[3,30],[6,20],[12,28],[24,50],[36,70],[48,85]],
+      oil: [[0,100],[3,75],[8,45],[12,50],[24,80],[36,95],[48,100]],
+      re: [[0,100],[6,85],[12,70],[24,62],[36,68],[48,80]],
+      ashare: [[0,100],[3,80],[8,55],[12,50],[24,85],[36,110],[48,120]],
+      cnbond: [[0,100],[12,106],[24,110],[48,114]],
+      cpi: [[0,100],[6,100],[12,98],[24,99],[36,101],[48,103]]
+    }
+  },
+  balance: {
+    id: "balance",
+    code: "04",
+    group: "需求与信用",
+    title: "资产负债表衰退",
+    blurb: "企业转向还债和缩表，宽松像在推绳子，曲线更像长期阴跌。",
+    analog: "参照：1990 年代日本的资产负债表调整，以及长期低增长、低通胀的经验",
+    phases: [12, 24, 40],
+    creditBlend: false,
+    policyMode: "balance",
+    policyNote: "单纯加大货币宽松，对股票和信贷的抬升往往有限，长债则可能走得更远。真正改变路径的，常常是资产负债表是否开始修复，以及财政是否托底，而不是再降一次短端利率。",
+    about: "这与普通的资本开支回吐不同。当资产价格下跌后留下沉重的债务和减值，私营部门可能从扩张转向“负债最小化”：优先还债、停止借钱、即使利率很低也不愿投资。物价涨速可能下降，甚至在部分阶段出现物价水平走弱。货币政策会像推绳子，底部也更像 L 型而不是 V 型。注意：通胀回落只是物价上涨变慢，通缩则是物价水平持续下降，不能混为一谈。",
+    signs: ["企业或家庭持续净还债，信贷需求弱，而不是仅仅一次砍资本开支", "政策已经放松，但投资、信贷和物价依然低迷", "资产减值、折旧或地产价格形成长期压力", "股市可能出现多次假突破，但盈利和信贷并没有跟上"],
+    watch: "长期通胀预期、工资、产能利用、银行贷款、企业投资、家庭债务、实际利率，以及企业是在扩张还是在还债。",
+    mechanism: "需求长期不足，折现率可以下降，所以高质量长债往往有很长的牛市；但股票、地产和工业商品会受到盈利和价格的持续压制。现金的名义利息后来会变得很低。加密作为高弹性风险资产，在这种环境里通常缺乏持续的流动性推动。",
+    disprove: "若生产率提高、新的需求出现，或财政和资产负债表修复使增长重新加快，这条 L 型路径就会被改写。低通胀也不是国债永远上涨的保证。",
+    fail: "把每一次政策宽松都当成风险资产的启动信号，在这里失败率较高。反过来，若实际走向的是再通胀或滞胀，超长债会受到很大伤害。",
+    strategies: {
+      shock: { check: "比较负债成本与收入稳定性，看资产期限和将来支出是否匹配，不要只看名义价格。", consider: "高质量长债和能产生稳定现金流、杠杆不高的资产，历史上比高资本开支的成长股更有韧性。", cost: "过早清掉所有风险资产，会在后来的缓慢修复里缺席；但不处理债务和期限错配，阴跌会拖得很长。" },
+      policy: { check: "不要只看是否降息，而要看信贷、投资和物价有没有真正跟上。", consider: "如果仍是推绳子，长债可能继续受益，股票的脉冲反弹需要更谨慎对待。", cost: "靠短债滚存的名义收益，在零利率附近会变得很薄。" },
+      stabilize: { check: "看企业是否停止净还债、投资是否不再下滑、资产减值是否告一段落。", consider: "在这些信号出现前，把反弹当成新牛市，容易反复被打回。", cost: "确认往往很慢，等待本身也有机会成本。" },
+      cycle: { check: "新周期若出现，通常伴随着资产负债表修复和可计算的股权回报，而不是估值故事重启。", consider: "拥有稳定自由现金流、对国内需求依赖较低的资产，可能先于高杠杆部门修复。", cost: "这类周期以年为单位，用两个季度的反弹去验证它，往往不够。" }
+    },
+    china: "若把这条路径用到中国资产上，地产、地方融资和居民部门杠杆会比美股科技更关键。中国国债是否成为避风港，取决于国内物价、利率和财政条件，模型不能直接套用日本的幅度。",
+    paths: {
+      cash: [[0,100],[12,102],[24,103],[36,103],[48,104]],
+      usd: [[0,100],[12,102],[24,100],[36,98],[48,96]],
+      fxCash: [[0,100],[12,99],[24,102],[36,105],[48,108]],
+      stBond: [[0,100],[12,104],[24,106],[36,107],[48,108]],
+      ltBond: [[0,100],[6,108],[12,118],[24,130],[36,140],[48,148]],
+      gold: [[0,100],[12,106],[24,114],[36,120],[48,126]],
+      equity: [[0,100],[6,88],[12,74],[24,64],[36,60],[48,62]],
+      ai: [[0,100],[6,72],[12,52],[24,40],[36,34],[48,36]],
+      defensive: [[0,100],[6,96],[12,90],[24,92],[36,98],[48,104]],
+      hy: [[0,100],[6,90],[12,82],[24,78],[36,80],[48,84]],
+      btc: [[0,100],[6,68],[12,44],[24,32],[36,30],[48,34]],
+      alts: [[0,100],[6,48],[12,26],[24,18],[36,16],[48,18]],
+      oil: [[0,100],[12,80],[24,70],[36,66],[48,65]],
+      re: [[0,100],[12,88],[24,74],[36,64],[48,60]],
+      ashare: [[0,100],[12,78],[24,70],[36,72],[48,78]],
+      cnbond: [[0,100],[12,108],[24,116],[36,122],[48,126]],
+      cpi: [[0,100],[12,99],[24,97],[36,96],[48,95]]
+    }
+  },
+  stagflation: {
+    id: "stagflation",
+    code: "05",
+    group: "物价、流动性与主权",
+    title: "滞胀与供给冲击",
+    blurb: "增长差、物价黏，股债可能一起跌。这需要额外的供给或通胀前提，不是 AI 下跌的必然结果。",
+    analog: "参照：1970 年代滞胀，以及 2022 年的部分特征",
+    phases: [10, 20, 36],
+    creditBlend: false,
+    policyMode: "stagflation",
+    policyNote: "如果通胀黏住，政策不能痛快放松，曲线会更长、更磨。强行放松可能推升黄金和商品，却继续伤害债券。",
+    about: "这里的主要矛盾是物价和利率。增长在放慢，但通胀或再通胀风险让央行无法像普通衰退里那样大幅放松。债券失去避险功能，股票的估值和盈利一起受压。现金的名义利息上升，但实际购买力仍可能被侵蚀。这条路径需要额外的供给、能源、地缘或财政前提，不能因为 AI 股价下跌就直接推出滞胀。",
+    signs: ["股债同时下跌，传统“股票跌、国债涨”的对冲失效", "实际利率上升，成长股和长期资产承压更明显", "原油、工业品或黄金相对抗跌，甚至走强", "工资、服务价格、能源或财政扩张让通胀难以快速回落"],
+    watch: "能源和食品价格、核心通胀、通胀预期、工资、长期国债收益率、就业和实际收入。通胀走低不等于价格已经下降。",
+    mechanism: "折现率上升打击所有长久期资产：科技股、长债、房地产和多数加密资产。商品和黄金更像对冲通胀或货币购买力的工具。现金和短债的吸引力来自不断提高的短期利率，而不是价格大涨。",
+    disprove: "如果供给迅速修复，或需求明显减弱把通胀打下来，路径会回到更普通的需求衰退。追逐已经上涨的商品，可能承受剧烈波动。",
+    fail: "把长债当避险，在这类路径里经常会失望。用传统股债六四分去应对，也可能同时受到两端伤害。",
+    strategies: {
+      shock: { check: "检查支出成本、浮动利率借款和现金购买力，不要依赖“股票跌时长期国债一定涨”。", consider: "历史上更有韧性的是短久期工具，以及与通胀更相关的实物资产。", cost: "提高短久期和实物资产比例，会减少以后通胀回落时债券和成长股修复的参与度。" },
+      policy: { check: "分辨央行是在坚持压制通胀，还是在通胀未降时过早转向。", consider: "若坚持紧缩，痛苦会延长，但现金收益率会变得可观。若过早放松而通胀未降，黄金和商品可能再走一程，债券则继续弱。", cost: "两种政策错误的代价不同，不能用同一种“加强政策”去理解。" },
+      stabilize: { check: "真正的拐点通常出现在通胀可信回落、实际利率见顶之后。", consider: "在那之前，超前把仓位扩到长久期风险资产，失败率较高。", cost: "等拐点确认，债券和股票可能已经修复了一截。" },
+      cycle: { check: "一旦滞胀缓解，股和债可能同时迎来估值修复。", consider: "在此之前，组合更依赖短债、商品和黄金，而不是宽基股票或加密。", cost: "商品和黄金在通胀回落后也可能迅速回吐。" }
+    },
+    china: "若全球滞胀叠加国内自身周期，A股、国内房产和中国国债会明显受国内通胀、利率和地产政策左右，不能直接套用美债和标普的关系。",
+    paths: {
+      cash: [[0,100],[12,105],[24,110],[48,122]],
+      usd: [[0,100],[6,105],[18,110],[36,108],[48,104]],
+      fxCash: [[0,100],[6,96],[18,91],[36,94],[48,98]],
+      stBond: [[0,100],[6,98],[12,99],[24,103],[48,110]],
+      ltBond: [[0,100],[6,90],[12,82],[24,78],[36,80],[48,85]],
+      gold: [[0,100],[6,112],[12,128],[24,150],[36,170],[48,185]],
+      equity: [[0,100],[6,88],[12,78],[24,72],[36,76],[48,82]],
+      ai: [[0,100],[6,75],[12,55],[24,42],[36,48],[48,58]],
+      defensive: [[0,100],[6,94],[12,88],[24,86],[36,90],[48,96]],
+      hy: [[0,100],[6,90],[12,82],[24,78],[36,84],[48,90]],
+      btc: [[0,100],[6,70],[12,48],[24,40],[36,50],[48,62]],
+      alts: [[0,100],[6,50],[12,28],[24,20],[36,24],[48,30]],
+      oil: [[0,100],[6,120],[12,145],[24,155],[36,140],[48,130]],
+      re: [[0,100],[6,95],[12,85],[24,75],[36,72],[48,78]],
+      ashare: [[0,100],[6,90],[12,80],[24,74],[36,78],[48,85]],
+      cnbond: [[0,100],[6,96],[12,90],[24,88],[36,92],[48,96]],
+      cpi: [[0,100],[6,104],[12,110],[24,122],[36,128],[48,132]]
+    }
+  },
+  liquidity: {
+    id: "liquidity",
+    code: "06",
+    group: "物价、流动性与主权",
+    title: "流动性骤停后强干预",
+    blurb: "跌得又快又深，但政策很快把市场拉回来。不能把 V 型当成所有危机的默认结局。",
+    analog: "参照：2020 年 3 月疫情冲击",
+    phases: [3, 8, 16],
+    creditBlend: false,
+    policyMode: "standard",
+    policyNote: "这个情景对政策速度和力度最敏感。干预越快越强，曲线越接近 V 型；一旦救助延迟，它会滑向更普通的衰退或信用损伤。",
+    about: "外生冲击或市场集中度踩踏，让所有人同时需要现金，市场在极短时间内崩溃。如果金融系统本身没有大面积坏账，而政府又迅速提供流动性和财政支持，价格可以同样迅速修复。它看起来像危机，但持续期和后遗症往往短于泡沫破裂或银行业危机。前提是救助真的来、而且来得快。",
+    signs: ["下跌速度极快，以周甚至日计算，而不是阴跌两年", "触发因素常是外生冲击或集中度踩踏，而不是长期泡沫的缓慢破裂", "政策几乎立刻转向：紧急流动性、购买资产或大规模财政", "高质量资产的功能很快恢复，信用压力没有演变成全面偿付危机"],
+    watch: "融资市场是否几天到几周内恢复运转，政策路径是否清晰，信用利差是否迅速收窄，以及实体损伤是否其实不深。",
+    mechanism: "第一周到第一个月是流动性定价，谁都能被卖掉。随后是政策定价：折现率下降、资产负债表被托住，风险资产的弹性会非常大。比特币和科技股往往跌得最凶，反起来也最猛。后来也可能接上再通胀。",
+    disprove: "如果救助延迟，或下面其实已经有大面积坏账，V 型不会出现，路径会滑向信用危机或更慢的衰退。如果只是把清偿推迟了，后面仍可能接上通胀或第二次冲击。",
+    fail: "在冲击期用杠杆抄最差的东西最危险。把“每次暴跌都会 V 型反转”当成规律，是这条路径最常见的误用。",
+    strategies: {
+      shock: { check: "先保证能拿住：核对杠杆、保证金、集中度和短期内必须支付的现金。", consider: "先活下来，而不是立刻抄最差的东西。短期波动会极端。", cost: "为了降低杠杆而卖出，可能卖在最差的几天；但杠杆留着，可能根本熬不到政策。" },
+      policy: { check: "当救助路径变得清晰，看流动性最好的风险资产和信用利差是否一起修复。", consider: "历史上宽基股票、头部科技和比特币修复可以很快。这时要开始想后面会不会出现再通胀。", cost: "政策反弹可以透支随后的盈利。" },
+      stabilize: { check: "区分哪些涨幅只是流动性回流，哪些已经透支了随后的盈利和物价。", consider: "V 型之后常有一段重新定价。", cost: "在这一段追高，可能碰到盈利和通胀的第二次冲击。" },
+      cycle: { check: "如果实体损伤其实不深，新高可能来得很快。", consider: "若救助同时推高了物价，后半段要重新看现金购买力、商品和长久期债券。", cost: "把闪崩抄底组合一直拿到再通胀阶段，长债和后进的现金都会受到侵蚀。" }
+    },
+    china: "中国资产在这类全球流动性休克里通常先一起跌，随后更多跟随国内流动性和信用政策，弹性和节奏不必与美股相同。",
+    paths: {
+      cash: [[0,100],[3,100],[12,101],[48,104]],
+      usd: [[0,100],[1,107],[3,110],[8,102],[18,97],[48,96]],
+      fxCash: [[0,100],[1,94],[3,91],[8,99],[18,104],[48,106]],
+      stBond: [[0,100],[2,104],[8,108],[24,106],[48,107]],
+      ltBond: [[0,100],[2,108],[8,112],[18,108],[48,104]],
+      gold: [[0,100],[1,92],[4,108],[12,122],[24,128],[48,132]],
+      equity: [[0,100],[1,82],[2,66],[6,90],[12,110],[24,122],[48,130]],
+      ai: [[0,100],[1,75],[2,60],[6,95],[12,125],[24,140],[48,150]],
+      defensive: [[0,100],[2,80],[6,98],[12,108],[24,114],[48,118]],
+      hy: [[0,100],[2,75],[6,92],[12,108],[24,112],[48,116]],
+      btc: [[0,100],[1,70],[2,52],[6,95],[12,130],[24,160],[48,175]],
+      alts: [[0,100],[1,55],[2,35],[6,80],[12,120],[24,140],[48,145]],
+      oil: [[0,100],[2,50],[4,40],[12,85],[24,110],[48,115]],
+      re: [[0,100],[3,82],[12,100],[24,112],[48,118]],
+      ashare: [[0,100],[2,75],[6,95],[12,115],[24,120],[48,125]],
+      cnbond: [[0,100],[6,104],[12,106],[48,108]],
+      cpi: [[0,100],[3,99],[12,102],[24,108],[36,112],[48,114]]
+    }
+  },
+  sovereign: {
+    id: "sovereign",
+    code: "07",
+    group: "物价、流动性与主权",
+    title: "主权与汇率压力",
+    blurb: "国债和本币不再当然安全，避风港本身出了问题。",
+    analog: "参照：部分主权债务和汇率压力；若发生在核心储备货币上，破坏力会更大",
+    phases: [8, 18, 32],
+    creditBlend: false,
+    policyMode: "sovereign",
+    policyNote: "常规的降息和扩表可能不但救不了债券，还会进一步削弱本币信用。这时黄金和实物资产的逻辑与前几类完全不同。",
+    about: "前面几条路径里，高质量国债和主要储备货币通常是避风港。这条把这个前提拿掉：市场开始怀疑主权资产负债表、货币购买力或国债的避险地位，或一个本就依赖外部融资的经济体出现资本外流。结果是股债汇可能同时承压，现金要看是哪一种现金。AI 股价下跌本身不足以推出某个国家货币贬值，这条路径需要额外的外部脆弱性或财政前提。",
+    signs: ["国债收益率在风险资产下跌时不降反升", "本币明显走弱，资本有外流压力", "黄金、部分实物资产或外部更稳健的资产同步走强", "财政赤字、债务滚动、外汇储备或政治僵局成为定价中心"],
+    watch: "本币汇率、外汇储备、外币债务及到期日、经常账户、主权借贷成本、资本流动和兑换限制。要以具体国家和地区为单位。",
+    mechanism: "无风险利率不再“无风险”，所有资产的折现和避险结构都要重写。政策空间变窄：放松会加重货币和国债的压力，紧缩又会压垮经济和股票。比特币在这个情景里理论上可能被赋予非主权资产的叙事，但短期仍可能先因流动性下跌。模型对这条线给的是方向示意，不确定性很高。",
+    disprove: "受冲击国家本身的主权债，与信用可靠国家的国债不能混为一谈。外币也不是无风险资产，可能有兑换、利率和交易对手风险。汇率也可能反转。",
+    fail: "传统的“只持有本国长债和现金”可能失效。不按币种列出支出和负债，就无法判断所谓避险到底保护的是哪一边。",
+    strategies: {
+      shock: { check: "按币种分别列出资产、未来支出和债务，看清外币资产的本币折算价值，以及外币负债的真实负担。", consider: "历史上投资者会更多地寻找黄金、外部更稳健的货币或资产，以及能保留购买力的实物。", cost: "转向外部资产可能面临兑换限制、错配和价格波动。" },
+      policy: { check: "如果应对只是更大的货币化，黄金和实物往往继续走强，长债继续弱。", consider: "股票未必能从宽松里立刻受益，因为折现率和风险溢价都在上升。", cost: "把主权问题当成普通的流动性危机去抄底，失败率较高。" },
+      stabilize: { check: "企稳需要的是财政路径重新变得可信，而不只是一次流动性投放。", consider: "在此之前，波动会长期高于普通衰退。", cost: "等待可信的财政路径，可能需要很长时间。" },
+      cycle: { check: "新的均衡可能是更高的名义利率、更弱的本币和更高的黄金定价。", consider: "股权资产只有在盈利和货币锚重新说得通之后才会有持续修复。", cost: "旧的股债配置坐标，可能已经不再适用。" }
+    },
+    china: "如果动摇发生在美元和美债体系，人民币资产并不自动安全，但中国国债和人民币也可能走出相对独立的政策路径。如果问题出在国内信用和财政，则中国国债的避险属性本身就会打折。模型无法替你判断是哪一种，只提示这条线要单独看。",
+    paths: {
+      cash: [[0,100],[12,102],[24,104],[48,108]],
+      usd: [[0,100],[3,96],[9,88],[18,84],[36,86],[48,90]],
+      fxCash: [[0,100],[3,104],[9,114],[18,120],[36,118],[48,114]],
+      stBond: [[0,100],[3,97],[9,90],[18,86],[36,88],[48,92]],
+      ltBond: [[0,100],[3,92],[9,78],[18,72],[36,76],[48,80]],
+      gold: [[0,100],[3,110],[9,130],[18,155],[36,175],[48,190]],
+      equity: [[0,100],[3,88],[9,72],[18,65],[36,70],[48,78]],
+      ai: [[0,100],[3,80],[9,60],[18,52],[36,58],[48,66]],
+      defensive: [[0,100],[3,90],[9,78],[18,72],[36,76],[48,82]],
+      hy: [[0,100],[3,85],[9,68],[18,58],[36,64],[48,72]],
+      btc: [[0,100],[2,80],[6,70],[12,90],[24,125],[36,145],[48,155]],
+      alts: [[0,100],[2,65],[6,45],[12,55],[24,70],[36,80],[48,85]],
+      oil: [[0,100],[6,108],[12,115],[24,120],[48,118]],
+      re: [[0,100],[12,85],[24,75],[48,72]],
+      ashare: [[0,100],[6,88],[12,80],[24,78],[48,85]],
+      cnbond: [[0,100],[12,102],[24,108],[48,112]],
+      cpi: [[0,100],[12,106],[24,112],[36,116],[48,118]]
+    }
+  },
+  repair: {
+    id: "repair",
+    code: "08",
+    group: "是否已经成了危机",
+    title: "调整后逐步修复",
+    blurb: "这不是另一种新的危机，而是对照情景：金融损伤有限，盈利和订单开始把估值接回来。",
+    analog: "参照：泡沫或冲击之后，技术或需求被逐步兑现的修复阶段",
+    phases: [6, 12, 24],
+    creditBlend: false,
+    policyMode: "standard",
+    policyNote: "修复可以来自盈利兑现、估值回落到可计算水平，或政策与融资条件改善。它不是对前面所有危机的保证结局。",
+    about: "把这条单独列出，是为了避免只看到危机，看不到调整结束后的另一种可能。前提是：金融体系受损有限，其他需求较稳，企业通过实际收入和利润逐步证明部分投资的价值。政策、供给、收入和估值改善后，市场可能修复。它更常接在局部调整或较浅的需求衰退之后，而不是信用崩溃或资产负债表长期损伤之后。",
+    signs: ["存活公司的现金流、订单或真实使用收入开始回升", "融资成本下降，信用压力没有恶化", "估值回到可计算的水平，资本开支计划被改写而不是被无限延续", "就业和其他行业需求没有持续垮掉"],
+    watch: "企业现金流与盈利质量、订单、真实使用收入、资本开支回报、融资成本和就业。要区分广泛的技术应用价值和单个公司的商业价值。",
+    mechanism: "当价格已经反映了较低的预期，而真实需求仍在，存活下来的公司可以在更低的资本成本上重新扩张。风险资产、尤其是有现金流的头部公司，可能先于故事本身修复。这不等于所有资产回到原高点。",
+    disprove: "如果修复只是流动性回流，而盈利、信贷和收入没有跟上，它可能只是中段反弹。如果随后出现第二次信用或通胀冲击，修复会被打断。",
+    fail: "把反弹理解为所有资产都能回到原高点，或用超出自身期限的杠杆去追修复，是最常见的误用。",
+    strategies: {
+      shock: { check: "即使价格开始反弹，仍先核对持有期限、资金需要和集中度。", consider: "先问这是流动性回流，还是盈利和订单已经跟上来。", cost: "过早确认修复，可能买在反弹的中段。" },
+      policy: { check: "融资条件改善是否伴随着真实使用和自由现金流，而不是只有估值扩张。", consider: "有自由现金流、不太依赖再融资的公司，通常更经得起这一段的检验。", cost: "政策推动的上涨可能很快透支未来回报。" },
+      stabilize: { check: "资本开支回报是否改善，头部公司是否在整合而不是重新盲目扩张。", consider: "修复过程中仍可能有很深的回撤，尤其是对仍无利润的主题资产。", cost: "等证据更充分时，最快的一截可能已经走过。" },
+      cycle: { check: "新的价格体系是否已经换了一套：更低的估值、更慢的开支、更清楚的商业模式。", consider: "行业还在，不代表旧价格还在，也不代表上一轮的每家公司都还在。", cost: "用旧高点衡量“有没有修复完”，会持续误导。" }
+    },
+    china: "中国资产的修复节奏更取决于国内增长、流动性和风险偏好，不必与美股科技的修复同步。",
+    paths: {
+      cash: [[0,100],[12,102],[24,104],[48,108]],
+      usd: [[0,100],[6,103],[12,102],[24,100],[48,99]],
+      fxCash: [[0,100],[6,98],[12,99],[24,101],[48,102]],
+      stBond: [[0,100],[12,105],[24,108],[48,112]],
+      ltBond: [[0,100],[6,104],[12,110],[24,112],[36,110],[48,108]],
+      gold: [[0,100],[6,104],[12,110],[24,118],[48,125]],
+      equity: [[0,100],[3,90],[9,78],[18,88],[24,100],[36,112],[48,122]],
+      ai: [[0,100],[3,80],[9,60],[18,72],[24,90],[36,110],[48,128]],
+      defensive: [[0,100],[6,94],[12,98],[24,108],[48,118]],
+      hy: [[0,100],[6,92],[12,96],[24,106],[48,114]],
+      btc: [[0,100],[3,72],[9,50],[18,80],[24,110],[36,140],[48,160]],
+      alts: [[0,100],[3,58],[9,35],[18,60],[24,90],[36,110],[48,120]],
+      oil: [[0,100],[6,90],[12,95],[24,108],[48,115]],
+      re: [[0,100],[12,96],[24,104],[48,112]],
+      ashare: [[0,100],[6,88],[12,92],[24,108],[48,118]],
+      cnbond: [[0,100],[12,105],[24,108],[48,110]],
+      cpi: [[0,100],[12,102],[24,105],[36,107],[48,108]]
+    }
+  }
+};
+
+const PHASE_NAMES = ["冲击期", "政策期", "企稳期", "新周期"];
+
+const HAVEN = {
+  local: { cash: "通常仍稳，但不一定出现危机式抢现金", usd: "不必大幅升值", stBond: "仍然可用", ltBond: "不必大幅走牛", gold: "不必当作必须加仓的避风港", btc: "更像高弹性科技，不是黄金" },
+  capex: { cash: "有效", usd: "前期常升，随后回落", stBond: "有效", ltBond: "通常有效，常是主要避风港之一", gold: "可能先平或略弱，随后走强", btc: "更像高弹性科技，深度调整" },
+  credit: { cash: "最重要", usd: "常因缺美元而升值", stBond: "有效", ltBond: "短暂承压后通常有效", gold: "常常先被卖掉，再走强", btc: "常常先被抛售，不是黄金" },
+  balance: { cash: "名义安全，但利息后来会很低", usd: "不一定升值", stBond: "可用，但收益会变薄", ltBond: "常常是最重要的避风港之一", gold: "可能温和走强，不是主线", btc: "缺乏持续的流动性推动，更像长期承压的风险资产" },
+  stagflation: { cash: "有效，主要靠短端利率，但实际购买力仍可能被侵蚀", usd: "可能偏强", stBond: "相对长债更有用", ltBond: "经常失效，股债可能同跌", gold: "更常直接走强，仍不是绝对对冲", btc: "受实际利率压制，不像黄金" },
+  liquidity: { cash: "有效，但持有期可能很短", usd: "急升后随干预回落", stBond: "有效", ltBond: "通常有效，而且反应快，后半段可能回吐", gold: "常常先被卖掉，再快速修复", btc: "跌得深，若救助到来也可能修得快" },
+  sovereign: { cash: "要看是哪一种现金", usd: "若问题在美元体系，则走弱", stBond: "本国短债也不再当然安全", ltBond: "经常失效", gold: "更常直接走强", btc: "方向上可能接近非主权资产，但不确定，短期仍可能先跌" },
+  repair: { cash: "不一定需要大幅提高", usd: "不必危机定价", stBond: "仍然可用", ltBond: "可能从避险定价回到更平常的水平", gold: "不必继续按危机加仓", btc: "若修复成立，弹性可能很大，但仍是风险资产" }
+};
+
+const state = {
+  scenario: "local",
+  compare: "",
+  severity: 1,
+  policySpeed: 1,
+  policyStrength: 1,
+  credit: 0,
+  month: 0,
+  playing: false,
+  on: new Set(DEFAULT_ON),
+  unit: "nom",
+  fixedAxis: false,
+  showCpi: false,
+  signs: new Set(),
+  preset: "divBond",
+  leverage: "",
+  spend: "",
+  ccy: "",
+  horizon: "",
+  snapshot: null
+};
+const SNAP_KEY = "crisisDashboard.snapshot.v1";
+const SIGN_STATE_LABEL = {
+  supported: "较支持",
+  weak: "证据偏弱",
+  not_supported: "暂不支持",
+  insufficient: "证据不足"
+};
+let syncDraft = null;
+let syncPicks = new Set();
+const DEFAULT_SYNC_URL = "snapshot.json";
+let pendingRemote = null;
+let playTimer = null;
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+function smoothstep(t) { return t * t * (3 - 2 * t); }
+function $(id) { return document.getElementById(id); }
+
+function valueFromKf(kf, month) {
+  if (!kf || !kf.length) return 100;
+  if (month <= kf[0][0]) return kf[0][1];
+  for (let i = 0; i < kf.length - 1; i++) {
+    const a = kf[i], b = kf[i + 1];
+    if (month <= b[0]) {
+      const t = (month - a[0]) / (b[0] - a[0] || 1);
+      return lerp(a[1], b[1], smoothstep(t));
+    }
+  }
+  return kf[kf.length - 1][1];
+}
+
+function allMonths(a, b) {
+  const s = new Set();
+  a.forEach(p => s.add(p[0]));
+  b.forEach(p => s.add(p[0]));
+  return [...s].sort((x, y) => x - y);
+}
+
+function blendKf(a, b, t) {
+  if (t <= 0) return a.map(p => p.slice());
+  if (t >= 1) return b.map(p => p.slice());
+  return allMonths(a, b).map(m => [m, lerp(valueFromKf(a, m), valueFromKf(b, m), t)]);
+}
+
+function adjustKf(kf, sc, severity, speed, strength, assetId) {
+  const troughHint = sc.phases[0];
+  const speedShift = (1 - speed) * 6;
+  const adjusted = kf.map(([m, v]) => {
+    let month = m;
+    if (m > 1) month = Math.max(1, Math.min(HORIZON, m + speedShift * (m / 24)));
+    let val = 100 + (v - 100) * severity;
+    if (m >= troughHint) {
+      const recover = (v - 100);
+      const boost = (strength - 1);
+      const mode = sc.policyMode;
+      if (mode === "stagflation") {
+        if (recover > 0) val = 100 + (val - 100) * (1 + boost * 0.45);
+        else val = 100 + (val - 100) * (1 - boost * 0.25);
+      } else if (mode === "sovereign") {
+        if (["gold", "btc", "oil"].includes(assetId)) val = 100 + (val - 100) * (1 + boost * 0.35);
+        else if (["ltBond", "stBond", "usd"].includes(assetId)) val = 100 + (val - 100) * (1 + boost * 0.4);
+        else val = 100 + (val - 100) * (1 - boost * 0.15) + boost * 4;
+      } else if (mode === "balance") {
+        let k = 0.15;
+        if (["ltBond", "stBond", "cnbond"].includes(assetId)) k = 0.45;
+        else if (["equity", "ai", "hy", "alts", "btc", "re", "oil"].includes(assetId)) k = 0.08;
+        val = val + boost * Math.max(0, (m - troughHint)) * k;
+      } else if (mode === "mild") {
+        val = val + boost * Math.max(0, (m - troughHint)) * 0.12;
+      } else {
+        val = val + boost * Math.max(0, (m - troughHint)) * 0.35;
+      }
+    }
+    return [month, val];
+  });
+  adjusted.sort((x, y) => x[0] - y[0]);
+  return adjusted;
+}
+
+function scenarioRaw(id, credit) {
+  const sc = SCENARIOS[id];
+  const out = {};
+  const keys = [...ASSETS.map(a => a.id), "cpi"];
+  for (const assetId of keys) {
+    let kf = sc.paths[assetId].map(p => p.slice());
+    if (sc.creditBlend && credit > 0) kf = blendKf(kf, SCENARIOS.credit.paths[assetId], credit);
+    out[assetId] = adjustKf(kf, sc, state.severity, state.policySpeed, state.policyStrength, assetId);
+  }
+  return out;
+}
+
+function toUnit(raw) {
+  const out = {};
+  const keys = Object.keys(raw);
+  for (const id of keys) {
+    if (id === "cpi" || state.unit === "nom") {
+      out[id] = raw[id].map(p => p.slice());
+    } else {
+      out[id] = raw[id].map(([m, v]) => {
+        const cpi = valueFromKf(raw.cpi, m);
+        return [m, cpi ? v / (cpi / 100) : v];
+      });
+    }
+  }
+  return out;
+}
+
+function scenarioPaths(id, credit) {
+  return toUnit(scenarioRaw(id, credit));
+}
+
+function phasesFor(id) {
+  const base = SCENARIOS[id].phases.slice();
+  if (id === "capex" && state.credit > 0) {
+    const c = SCENARIOS.credit.phases;
+    return base.map((v, i) => lerp(v, c[i], state.credit));
+  }
+  const shift = (1 - state.policySpeed) * 4;
+  return base.map(v => Math.max(2, v + shift));
+}
+
+function phaseIndex(month, phases) {
+  if (month <= phases[0]) return 0;
+  if (month <= phases[1]) return 1;
+  if (month <= phases[2]) return 2;
+  return 3;
+}
+function phaseKey(i) { return ["shock", "policy", "stabilize", "cycle"][i]; }
+
+function seriesAt(paths, assetId, month) {
+  return valueFromKf(paths[assetId], month);
+}
+
+function pathArray(kf) {
+  const arr = [];
+  for (let m = 0; m <= HORIZON; m += 0.25) arr.push([m, valueFromKf(kf, m)]);
+  return arr;
+}
+
+function statsFor(kf) {
+  let min = Infinity, minM = 0, maxDD = 0, recover = null, peaked = 100;
+  for (let m = 0; m <= HORIZON; m++) {
+    const v = valueFromKf(kf, m);
+    if (v < min) { min = v; minM = m; }
+    peaked = Math.max(peaked, v);
+    maxDD = Math.min(maxDD, v - 100);
+    if (recover === null && m > minM && min < 99 && v >= 100) recover = m;
+  }
+  return { trough: min, troughM: minM, maxDD, y1: valueFromKf(kf, 12), y2: valueFromKf(kf, 24), y4: valueFromKf(kf, 48), recover };
+}
+
+function fmtPct(v) {
+  const p = v - 100;
+  return (p >= 0 ? "+" : "") + p.toFixed(1) + "%";
+}
+
+function currentPaths() {
+  return scenarioPaths(state.scenario, state.scenario === "capex" ? state.credit : 0);
+}
+function comparePaths() {
+  if (!state.compare || state.compare === state.scenario) return null;
+  return scenarioPaths(state.compare, 0);
+}
+
+function scoreScenarios() {
+  const scores = {};
+  Object.keys(SCENARIOS).forEach(id => scores[id] = 0);
+  if (!state.signs.size) return scores;
+  SIGNS.forEach(s => {
+    if (!state.signs.has(s.id)) return;
+    Object.entries(s.map).forEach(([id, w]) => { scores[id] = (scores[id] || 0) + w; });
+  });
+  return scores;
+}
+
+function personalNote() {
+  const bits = [];
+  if (state.spend === "yes") bits.push("你在未来 12 个月有较大的确定支出，冲击期应更优先保证可变现资金，而不是去抄最差的资产。");
+  if (state.leverage === "yes") bits.push("如果有杠杆、保证金或浮动利率债务，先处理被迫出售和还款风险，再讨论配置。");
+  if (state.ccy === "cny") bits.push("若主要支出是人民币，美元资产和美债的避险效果还要经过汇率这一层，不能直接等于本币安全。");
+  if (state.ccy === "usd") bits.push("若主要支出是美元，美元现金和美债的意义更直接；人民币资产则要单独看国内政策和汇率。");
+  if (state.ccy === "other") bits.push("若主要支出是其他货币，请按币种分别列出资产、支出和负债，不要把单一储备货币当成对所有人同样安全。");
+  if (state.horizon === "lt1") bits.push("可承受期限不到一年时，不要用 48 个月的修复曲线来说服自己拿住深度回撤的资产。");
+  if (state.horizon === "y13") bits.push("期限在一到三年时，更要看路径会不会从局部调整滑向信用或资产负债表损伤，因为后两者的底部更长。");
+  if (state.horizon === "gt3") bits.push("若期限在三年以上，仍要先确认自己能否熬过中途的流动性压力，再谈新周期里谁能活下来。");
+  return bits;
+}
+
+function signEntry(id) {
+  const snap = state.snapshot;
+  if (!snap || !snap.signs) return null;
+  return snap.signs[id] || null;
+}
+
+function renderSigns() {
+  $("signBox").innerHTML = SIGNS.map(s => {
+    const entry = signEntry(s.id);
+    const st = entry && entry.state ? entry.state : "";
+    const pill = st ? `<span class="sign-pill ${st}">${SIGN_STATE_LABEL[st] || st}</span>` : "";
+    const note = entry && entry.note ? `<span class="sign-note">${esc(entry.note)}</span>` : "";
+    return `<label class="check">
+      <input type="checkbox" data-id="${s.id}" ${state.signs.has(s.id) ? "checked" : ""} />
+      <span>${s.text}${pill}${note}</span>
+    </label>`;
+  }).join("");
+  $("signBox").querySelectorAll("input").forEach(inp => {
+    inp.addEventListener("change", () => {
+      if (inp.checked) state.signs.add(inp.dataset.id);
+      else state.signs.delete(inp.dataset.id);
+      if (state.snapshot) persistSnapshot();
+      renderScenarios();
+    });
+  });
+  renderSyncMeta();
+}
+
+function renderSyncMeta() {
+  const el = $("syncMeta");
+  if (!el) return;
+  const remoteNew = pendingRemote && (!state.snapshot || pendingRemote.asOf !== state.snapshot.asOf);
+  if (remoteNew) {
+    el.innerHTML = `网页上已有 <b>${esc(pendingRemote.asOfLabel || pendingRemote.asOf)}</b> 的判断，尚未采用。<button type="button" id="syncPending">查看并采用</button>`;
+    const p = $("syncPending");
+    if (p) p.addEventListener("click", () => openSync(pendingRemote, false));
+    return;
+  }
+  if (state.snapshot) {
+    const label = state.snapshot.asOfLabel || state.snapshot.asOf || "";
+    el.innerHTML = `已采用 <b>${esc(label)}</b> 的判断。勾选仍可手改，不会自动选定路径。<button type="button" id="syncReview">查看依据</button><button type="button" id="syncRefresh">重新检查</button><button type="button" id="syncClear">清除同步标记</button>`;
+    const r = $("syncReview");
+    const c = $("syncClear");
+    const f = $("syncRefresh");
+    if (r) r.addEventListener("click", () => openSync(state.snapshot, true));
+    if (c) c.addEventListener("click", clearSnapshot);
+    if (f) f.addEventListener("click", () => { openSync(null, false); checkRemoteSnapshot(false); });
+    return;
+  }
+  if (location.protocol === "file:") {
+    el.innerHTML = "本地打开时无法自动上网同步。用 GitHub 上的网页打开后，会自动检查当天判断。也可在这里导入文件。";
+    return;
+  }
+  el.innerHTML = "网页版打开后会自动检查当天判断。点右上角也可立即同步，确认后再采用。";
+}
+
+function renderScenarios() {
+  const box = $("scenarios");
+  const scores = scoreScenarios();
+  const max = Math.max(0, ...Object.values(scores));
+  const groups = [];
+  Object.values(SCENARIOS).forEach(sc => {
+    if (!groups.includes(sc.group)) groups.push(sc.group);
+  });
+  box.innerHTML = groups.map(g => {
+    const cards = Object.values(SCENARIOS).filter(sc => sc.group === g).map(sc => {
+      const match = max > 0 && scores[sc.id] >= Math.max(2, max * 0.75) && scores[sc.id] === max;
+      const near = max > 0 && scores[sc.id] >= max * 0.5 && scores[sc.id] > 0 && !match;
+      return `<button class="sc-card ${state.scenario === sc.id ? "active" : ""}" data-id="${sc.id}">
+        <div class="sc-id">路径 ${sc.code}${match ? '<span class="badge">更吻合</span>' : near ? '<span class="badge">较接近</span>' : ""}</div>
+        <h3>${sc.title}</h3>
+        <p>${sc.blurb}</p>
+        <div class="analog">${sc.analog}</div>
+      </button>`;
+    }).join("");
+    return `<div style="grid-column:1/-1" class="group-label">${g}</div>${cards}`;
+  }).join("");
+  // group labels break grid; rebuild as sections
+  box.innerHTML = groups.map(g => {
+    const cards = Object.values(SCENARIOS).filter(sc => sc.group === g).map(sc => {
+      const match = max > 0 && scores[sc.id] === max && scores[sc.id] > 0;
+      const near = max > 0 && scores[sc.id] >= max * 0.55 && scores[sc.id] > 0 && scores[sc.id] < max;
+      return `<button class="sc-card ${state.scenario === sc.id ? "active" : ""}" data-id="${sc.id}">
+        <div class="sc-id">路径 ${sc.code}${match ? '<span class="badge">更吻合</span>' : near ? '<span class="badge">较接近</span>' : ""}</div>
+        <h3>${sc.title}</h3>
+        <p>${sc.blurb}</p>
+        <div class="analog">${sc.analog}</div>
+      </button>`;
+    }).join("");
+    return `<div style="grid-column:1/-1"><div class="group-label">${g}</div><div class="scenarios" style="margin:0">${cards}</div></div>`;
+  }).join("");
+  box.querySelectorAll(".sc-card").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.scenario = btn.dataset.id;
+      if (state.scenario !== "capex") state.credit = 0;
+      renderAll();
+    });
+  });
+  if (!state.signs.size) {
+    $("diagResult").textContent = "尚未勾选。下面八条路径都可以直接比较。";
+  } else {
+    const ranked = Object.keys(scores).sort((a, b) => scores[b] - scores[a]);
+    const top = ranked.filter(id => scores[id] > 0).slice(0, 3).map(id => SCENARIOS[id].title);
+    let html = top.length
+      ? `根据已勾选的现象，更值得先对照：<b>${top.join("、")}</b>。这只是吻合度提示，不是发生概率。`
+      : "已勾选的现象与现有路径没有明显重合，请直接比较各条路径，或调整勾选。";
+    if (state.snapshot && state.snapshot.summary) {
+      html += `<div class="sign-note" style="margin-top:8px">${esc(state.snapshot.summary)}</div>`;
+    }
+    $("diagResult").innerHTML = html;
+  }
+  const sel = $("compare");
+  const cur = state.compare;
+  sel.innerHTML = `<option value="">不对比</option>` + Object.values(SCENARIOS).map(sc =>
+    `<option value="${sc.id}" ${sc.id === cur ? "selected" : ""}>${sc.title}</option>`).join("");
+}
+
+function renderControls() {
+  $("sevVal").textContent = state.severity.toFixed(2) + "×";
+  $("spdVal").textContent = state.policySpeed < 0.85 ? "较慢" : state.policySpeed > 1.15 ? "较快" : "中性";
+  $("strVal").textContent = state.policyStrength < 0.85 ? "偏弱" : state.policyStrength > 1.15 ? "偏强" : "中性";
+  $("crdVal").textContent = Math.round(state.credit * 100) + "%";
+  $("creditCtrl").classList.toggle("disabled", state.scenario !== "capex");
+  $("cpiBtn").classList.toggle("primary", state.showCpi);
+  $("unitNote").textContent = state.unit === "nom"
+    ? "当前是美元名义示意指数。实际购买力会扣除这条路径下的示意物价，物价本身也是人为设定的。"
+    : "当前是扣除该路径示意物价后的实际购买力。物价曲线同样是人为设定，不能当成真实 CPI。";
+}
+
+function drawChart() {
+  const svg = $("chart");
+  const rect = svg.getBoundingClientRect();
+  const W = Math.max(640, rect.width || 1000);
+  const H = Math.max(300, rect.height || 420);
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const pad = { l: 52, r: 18, t: 28, b: 36 };
+  const paths = currentPaths();
+  const cmp = comparePaths();
+  const ids = ASSETS.filter(a => state.on.has(a.id)).map(a => a.id);
+  let vmin = 40, vmax = 200;
+  if (!state.fixedAxis) {
+    vmin = Infinity; vmax = -Infinity;
+    const watch = state.showCpi ? ids.concat("cpi") : ids.slice();
+    if (!watch.length) { vmin = 80; vmax = 120; }
+    watch.forEach(id => {
+      for (let m = 0; m <= HORIZON; m++) {
+        vmin = Math.min(vmin, seriesAt(paths, id, m));
+        vmax = Math.max(vmax, seriesAt(paths, id, m));
+        if (cmp) {
+          vmin = Math.min(vmin, seriesAt(cmp, id, m));
+          vmax = Math.max(vmax, seriesAt(cmp, id, m));
+        }
+      }
+    });
+    const slack = (vmax - vmin) * 0.10 || 8;
+    vmin -= slack; vmax += slack;
+  }
+  const x = m => pad.l + (m / HORIZON) * (W - pad.l - pad.r);
+  const y = v => pad.t + (1 - (v - vmin) / (vmax - vmin)) * (H - pad.t - pad.b);
+  const phases = phasesFor(state.scenario);
+  const phaseX = [0, ...phases, HORIZON];
+  const phaseFill = ["rgba(0,113,227,0.06)", "rgba(0,113,227,0.035)", "rgba(0,0,0,0.03)", "rgba(0,0,0,0.015)"];
+  let g = "";
+  for (let i = 0; i < 4; i++) {
+    const x0 = x(phaseX[i]), x1 = x(phaseX[i + 1]);
+    g += `<rect x="${x0}" y="${pad.t}" width="${Math.max(0, x1 - x0)}" height="${H - pad.t - pad.b}" fill="${phaseFill[i]}" />`;
+    g += `<text x="${x0 + 8}" y="${20}" fill="#6e6e73" font-size="11">${PHASE_NAMES[i]}</text>`;
+  }
+  [0, 6, 12, 18, 24, 36, 48].forEach(m => {
+    g += `<line x1="${x(m)}" y1="${pad.t}" x2="${x(m)}" y2="${H - pad.b}" stroke="#d2d2d7" stroke-dasharray="2 4" />`;
+    g += `<text x="${x(m)}" y="${H - 12}" text-anchor="middle" fill="#6e6e73" font-size="11">${m}月</text>`;
+  });
+  for (let i = 0; i <= 5; i++) {
+    const v = vmin + (i / 5) * (vmax - vmin);
+    g += `<line x1="${pad.l}" y1="${y(v)}" x2="${W - pad.r}" y2="${y(v)}" stroke="#d2d2d7" />`;
+    g += `<text x="${pad.l - 8}" y="${y(v) + 4}" text-anchor="end" fill="#6e6e73" font-size="11">${Math.round(v)}</text>`;
+  }
+  g += `<line x1="${x(0)}" y1="${y(100)}" x2="${x(HORIZON)}" y2="${y(100)}" stroke="#86868b" stroke-dasharray="5 5" stroke-width="1" />`;
+  g += `<text x="${W - pad.r}" y="${y(100) - 6}" text-anchor="end" fill="#86868b" font-size="10">起点 100</text>`;
+  function polyline(kf, color, dash, width) {
+    const pts = pathArray(kf).map(p => `${x(p[0]).toFixed(2)},${y(p[1]).toFixed(2)}`).join(" ");
+    return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="${width || 2}" stroke-linejoin="round" stroke-linecap="round" ${dash ? 'stroke-dasharray="6 4" opacity="0.7"' : 'opacity="0.95"'} />`;
+  }
+  if (state.showCpi) {
+    g += polyline(paths.cpi, "#86868b", true, 1.6);
+    if (cmp) g += polyline(cmp.cpi, "#86868b", true, 1.2);
+  }
+  ids.forEach(id => {
+    const asset = ASSETS.find(a => a.id === id);
+    g += polyline(paths[id], asset.color, false);
+    if (cmp) g += polyline(cmp[id], asset.color, true);
+    const v = seriesAt(paths, id, state.month);
+    g += `<circle cx="${x(state.month)}" cy="${y(v)}" r="3.4" fill="${asset.color}" stroke="#ffffff" stroke-width="1" />`;
+  });
+  g += `<line x1="${x(state.month)}" y1="${pad.t}" x2="${x(state.month)}" y2="${H - pad.b}" stroke="#0071e3" stroke-width="1.2" opacity="0.85" />`;
+  svg.innerHTML = g;
+  const monthFromEvent = ev => {
+    const r = svg.getBoundingClientRect();
+    const px = ev.clientX - r.left;
+    const m = ((px / r.width) * W - pad.l) / (W - pad.l - pad.r) * HORIZON;
+    return Math.max(0, Math.min(HORIZON, Math.round(m)));
+  };
+  svg.onmousemove = ev => showTip(ev.clientX, ev.clientY, monthFromEvent(ev), paths, cmp, ids);
+  svg.onmouseleave = () => { $("tip").style.display = "none"; };
+  svg.onclick = ev => {
+    state.month = monthFromEvent(ev);
+    $("monthRange").value = state.month;
+    renderDynamic();
+  };
+}
+
+function showTip(cx, cy, month, paths, cmp, ids) {
+  const tip = $("tip");
+  const show = state.showCpi ? ids.concat("cpi") : ids;
+  const rows = show.map(id => {
+    const a = id === "cpi" ? { short: "示意物价", color: "#86868b" } : ASSETS.find(x => x.id === id);
+    const v = seriesAt(paths, id, month);
+    const c = cmp ? seriesAt(cmp, id, month) : null;
+    return `<div style="display:flex;gap:10px;justify-content:space-between;align-items:center">
+      <span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${a.color};margin-right:6px"></i>${a.short}</span>
+      <span style="font-family:SF Mono,Menlo,monospace">${fmtPct(v)}${c != null ? ' <span style="opacity:.7">/ 对比 ' + fmtPct(c) + '</span>' : ""}</span>
+    </div>`;
+  }).join("");
+  tip.innerHTML = `<div style="color:#6e6e73;margin-bottom:6px">第 ${month} 个月 · ${PHASE_NAMES[phaseIndex(month, phasesFor(state.scenario))]} · ${state.unit === "nom" ? "名义" : "实际购买力"}</div>${rows}`;
+  tip.style.display = "block";
+  tip.style.left = Math.min(window.innerWidth - 300, cx + 14) + "px";
+  tip.style.top = Math.min(window.innerHeight - 20, cy + 14) + "px";
+}
+
+function renderAssets(paths) {
+  const box = $("assets");
+  const groups = [];
+  ASSETS.forEach(a => { if (!groups.includes(a.group)) groups.push(a.group); });
+  box.innerHTML = groups.map(g => {
+    const chips = ASSETS.filter(a => a.group === g).map(a => {
+      const on = state.on.has(a.id);
+      const v = seriesAt(paths, a.id, state.month);
+      const cls = v >= 100 ? "up" : "down";
+      return `<button class="asset ${on ? "on" : ""}" data-id="${a.id}" style="--chip:${a.color}" title="${a.ret}">
+        <span class="dot"></span>${a.short}
+        <span class="pct ${cls}">${fmtPct(v)}</span>
+      </button>`;
+    }).join("");
+    return chips;
+  }).join("");
+  box.querySelectorAll(".asset").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.id;
+      if (state.on.has(id)) { if (state.on.size > 1) state.on.delete(id); }
+      else state.on.add(id);
+      renderDynamic();
+    });
+  });
+  $("legend").innerHTML = ASSETS.filter(a => state.on.has(a.id)).map(a =>
+    `<span style="display:inline-flex;align-items:center;gap:6px;margin-right:14px;font-size:12px;color:#6e6e73"><i style="width:10px;height:10px;border-radius:50%;background:${a.color};display:inline-block"></i>${a.short}</span>`
+  ).join("") + (state.showCpi ? `<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6e6e73"><i style="width:14px;border-top:2px dashed #86868b;display:inline-block"></i>示意物价</span>` : "");
+}
+
+function renderPanels(paths) {
+  const sc = SCENARIOS[state.scenario];
+  const i = phaseIndex(state.month, phasesFor(state.scenario));
+  const mix = state.scenario === "capex" && state.credit > 0;
+  $("chartTitle").textContent = mix
+    ? `${sc.title}  →  正在滑向信用危机（${Math.round(state.credit * 100)}%）`
+    : sc.title;
+  $("chartSub").textContent = mix
+    ? "这条曲线是资本开支衰退与信用危机两条路径的混合，用来观察传导加深时资产会怎样改道。仍然是示意，不是预测。"
+    : `${sc.analog}。起点为 100，之后为示意相对路径，不是预测价格。`;
+  $("phaseTag").textContent = PHASE_NAMES[i];
+  $("monthTag").textContent = `第 ${state.month} 个月`;
+
+  const st = sc.strategies[phaseKey(i)];
+  $("aboutPanel").innerHTML = `
+    <h3>${sc.title}</h3>
+    <p>${sc.about}</p>
+    <h4>怎样识别</h4>
+    <ul>${sc.signs.map(s => `<li>${s}</li>`).join("")}</ul>
+    <h4>要看什么</h4>
+    <p>${sc.watch}</p>
+    <h4>为什么曲线会这样走</h4>
+    <p>${sc.mechanism}</p>
+    <h4>反证</h4>
+    <p>${sc.disprove}</p>
+    <h4>中国相关资产</h4>
+    <p>${sc.china}</p>
+    <p style="margin-top:10px;color:#8b867b;font-size:12px">${sc.policyNote}</p>
+  `;
+  const notes = personalNote();
+  $("strategyPanel").innerHTML = `
+    <h3>这一阶段优先核对什么</h3>
+    <dl class="kv">
+      <dt>当前阶段</dt><dd>${PHASE_NAMES[i]} · 第 ${state.month} 个月。阶段只是分析方式，事件不必按同样步骤发生。</dd>
+    </dl>
+    <h4>先核对</h4>
+    <p>${st.check}</p>
+    <h4>可考虑</h4>
+    <p>${st.consider}</p>
+    <h4>代价</h4>
+    <p>${st.cost}</p>
+    <h4>这条路径何时失效</h4>
+    <p>${sc.fail}</p>
+    ${notes.length ? `<h4>结合你填写的条件</h4><ul>${notes.map(n => `<li>${n}</li>`).join("")}</ul>` : ""}
+    <h4>四个阶段</h4>
+    <ul>
+      <li><b>冲击期：</b>${sc.strategies.shock.check}${sc.strategies.shock.consider}</li>
+      <li><b>政策期：</b>${sc.strategies.policy.check}${sc.strategies.policy.consider}</li>
+      <li><b>企稳期：</b>${sc.strategies.stabilize.check}${sc.strategies.stabilize.consider}</li>
+      <li><b>新周期：</b>${sc.strategies.cycle.check}${sc.strategies.cycle.consider}</li>
+    </ul>
+    <p style="margin-top:10px;color:#8b867b;font-size:12px">这里写的是判断顺序和过往机制里更常见的资金行为，不是对你给出的投资建议，也不保证下一次会重复。</p>
+  `;
+
+  const havenKeys = ["cash", "usd", "stBond", "ltBond", "gold", "btc"];
+  const labels = { cash: "现金 / 短端", usd: "美元", stBond: "短债", ltBond: "长债", gold: "黄金", btc: "比特币" };
+  $("havenTable").innerHTML = `<thead><tr><th>资产</th><th>在当前路径里还能否当避风港</th></tr></thead><tbody>` +
+    havenKeys.map(k => `<tr><td class="name">${labels[k]}</td><td style="text-align:left;font-family:var(--sans)">${HAVEN[sc.id][k]}</td></tr>`).join("") +
+    `</tbody>`;
+
+  const rows = ASSETS.map(a => {
+    const s = statsFor(paths[a.id]);
+    const now = seriesAt(paths, a.id, state.month);
+    return `<tr>
+      <td class="name">${a.name}</td>
+      <td class="${now < 100 ? "neg" : "pos"}">${fmtPct(now)}</td>
+      <td class="neg">${s.maxDD.toFixed(1)}%</td>
+      <td>${s.troughM.toFixed(0)} 个月</td>
+      <td class="${s.y1 < 100 ? "neg" : "pos"}">${fmtPct(s.y1)}</td>
+      <td class="${s.y2 < 100 ? "neg" : "pos"}">${fmtPct(s.y2)}</td>
+      <td class="${s.y4 < 100 ? "neg" : "pos"}">${fmtPct(s.y4)}</td>
+      <td>${s.recover == null ? (s.trough >= 99 ? "基本未破" : "48个月内未回本") : s.recover.toFixed(0) + " 个月"}</td>
+    </tr>`;
+  }).join("");
+  $("statTable").innerHTML = `<thead><tr>
+    <th>资产</th><th>当前</th><th>相对起点最大回撤</th><th>见底时间</th>
+    <th>12个月</th><th>24个月</th><th>48个月</th><th>回到起点</th>
+  </tr></thead><tbody>${rows}</tbody>`;
+
+  const layerMap = { local: [1], capex: [1, 2, 3], credit: [1, 2, 3, 4], balance: [2, 3, 4], stagflation: [3, 5], liquidity: [4, 5], sovereign: [5], repair: [1, 2] };
+  document.querySelectorAll("#layers .layer").forEach(el => {
+    const n = +el.dataset.layer;
+    el.classList.toggle("active", (layerMap[sc.id] || []).includes(n));
+  });
+}
+
+function buyHoldValue(paths, weights, month) {
+  // start: allocate w of 100 to each asset at time 0 (all 100), so value(m) = sum(w_i * P_i(m))
+  let v = 0;
+  Object.entries(weights).forEach(([id, w]) => { v += w * seriesAt(paths, id, month); });
+  return v;
+}
+
+function renderPresets() {
+  $("presetBox").innerHTML = PRESETS.map(p => {
+    const on = state.preset === p.id;
+    const failed = p.fail.includes(state.scenario);
+    return `<button class="preset ${on ? "on" : ""}" data-id="${p.id}">
+      <h3>${p.name}</h3>
+      <p>${p.hint}</p>
+      ${failed ? `<div class="fail">在当前路径下，这份对照材料把这套搭配标为容易失配。</div>` : ""}
+    </button>`;
+  }).join("");
+  $("presetBox").querySelectorAll(".preset").forEach(btn => {
+    btn.addEventListener("click", () => { state.preset = btn.dataset.id; renderDynamic(); });
+  });
+  const paths = currentPaths();
+  const rows = PRESETS.map(p => {
+    const s = statsFor(monthKfFromWeights(paths, p.w));
+    const now = buyHoldValue(paths, p.w, state.month);
+    const y4 = buyHoldValue(paths, p.w, 48);
+    const failed = p.fail.includes(state.scenario);
+    return `<tr>
+      <td class="name">${p.name}${p.id === state.preset ? "（当前）" : ""}</td>
+      <td class="${now < 100 ? "neg" : "pos"}">${fmtPct(now)}</td>
+      <td class="neg">${s.maxDD.toFixed(1)}%</td>
+      <td>${s.troughM.toFixed(0)} 个月</td>
+      <td class="${y4 < 100 ? "neg" : "pos"}">${fmtPct(y4)}</td>
+      <td style="text-align:left;font-family:var(--sans)">${failed ? "当前路径被标为容易失配" : "在当前路径里不是那份材料所说的典型失效情形"}</td>
+    </tr>`;
+  }).join("");
+  $("presetTable").innerHTML = `<thead><tr><th>对照组合</th><th>当前</th><th>相对起点最大回撤</th><th>见底时间</th><th>48个月</th><th>失效提示</th></tr></thead><tbody>${rows}</tbody>`;
+}
+
+function monthKfFromWeights(paths, weights) {
+  const kf = [];
+  for (let m = 0; m <= HORIZON; m++) kf.push([m, buyHoldValue(paths, weights, m)]);
+  return kf;
+}
+
+function downloadCsv() {
+  const paths = currentPaths();
+  const cols = ["月份", "阶段", ...ASSETS.map(a => a.short), "示意物价"];
+  const lines = [cols.join(",")];
+  const ph = phasesFor(state.scenario);
+  for (let m = 0; m <= HORIZON; m++) {
+    const row = [m, PHASE_NAMES[phaseIndex(m, ph)], ...ASSETS.map(a => seriesAt(paths, a.id, m).toFixed(2)), seriesAt(paths, "cpi", m).toFixed(2)];
+    lines.push(row.join(","));
+  }
+  const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `危机路径示意-${SCENARIOS[state.scenario].title}-${state.unit === "nom" ? "名义" : "实际"}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function renderDynamic() {
+  renderControls();
+  const paths = currentPaths();
+  renderAssets(paths);
+  renderPanels(paths);
+  renderPresets();
+  drawChart();
+}
+
+function renderAll() {
+  renderSigns();
+  renderScenarios();
+  $("monthRange").value = state.month;
+  renderDynamic();
+}
+
+function togglePlay() {
+  state.playing = !state.playing;
+  $("playBtn").textContent = state.playing ? "暂停" : "播放";
+  if (!state.playing) { clearInterval(playTimer); playTimer = null; }
+  else {
+    playTimer = setInterval(() => {
+      state.month += 1;
+      if (state.month > HORIZON) state.month = 0;
+      $("monthRange").value = state.month;
+      renderDynamic();
+    }, 180);
+  }
+}
+
+function bind() {
+  $("severity").addEventListener("input", e => { state.severity = +e.target.value; renderDynamic(); });
+  $("speed").addEventListener("input", e => { state.policySpeed = +e.target.value; renderDynamic(); });
+  $("strength").addEventListener("input", e => { state.policyStrength = +e.target.value; renderDynamic(); });
+  $("credit").addEventListener("input", e => { state.credit = +e.target.value; renderDynamic(); });
+  $("monthRange").addEventListener("input", e => { state.month = +e.target.value; if (state.playing) togglePlay(); renderDynamic(); });
+  $("playBtn").addEventListener("click", togglePlay);
+  $("cpiBtn").addEventListener("click", () => { state.showCpi = !state.showCpi; renderDynamic(); });
+  $("csvBtn").addEventListener("click", downloadCsv);
+  $("unitSeg").querySelectorAll("button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.unit = btn.dataset.unit;
+      $("unitSeg").querySelectorAll("button").forEach(b => b.classList.toggle("on", b === btn));
+      renderDynamic();
+    });
+  });
+  $("axisSeg").querySelectorAll("button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      state.fixedAxis = btn.dataset.axis === "fixed";
+      $("axisSeg").querySelectorAll("button").forEach(b => b.classList.toggle("on", b === btn));
+      renderDynamic();
+    });
+  });
+  $("resetBtn").addEventListener("click", () => {
+    state.severity = 1; state.policySpeed = 1; state.policyStrength = 1; state.credit = 0; state.month = 0; state.compare = "";
+    state.on = new Set(DEFAULT_ON); state.unit = "nom"; state.fixedAxis = false; state.showCpi = false;
+    $("severity").value = 1; $("speed").value = 1; $("strength").value = 1; $("credit").value = 0;
+    $("unitSeg").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.unit === "nom"));
+    $("axisSeg").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.axis === "auto"));
+    if (state.playing) togglePlay();
+    renderAll();
+  });
+  $("compare").addEventListener("change", e => { state.compare = e.target.value; renderDynamic(); });
+  ["levSel", "spendSel", "ccySel", "horSel"].forEach((id, i) => {
+    const key = ["leverage", "spend", "ccy", "horizon"][i];
+    $(id).addEventListener("change", e => { state[key] = e.target.value; renderDynamic(); });
+  });
+  window.addEventListener("resize", () => drawChart());
+  document.addEventListener("keydown", e => {
+    const tag = (e.target && e.target.tagName || "").toLowerCase();
+    const typing = tag === "input" || tag === "textarea" || tag === "select" || e.target.isContentEditable;
+    if (e.key === "Escape" && $("syncMask") && !$("syncMask").hidden) { closeSync(); return; }
+    if (typing || ($("syncMask") && !$("syncMask").hidden)) return;
+    if (e.key === "ArrowRight") { state.month = Math.min(HORIZON, state.month + 1); $("monthRange").value = state.month; renderDynamic(); }
+    if (e.key === "ArrowLeft") { state.month = Math.max(0, state.month - 1); $("monthRange").value = state.month; renderDynamic(); }
+    if (e.key === " ") { e.preventDefault(); togglePlay(); }
+  });
+  bindSync();
+}
+
+function esc(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function extractJson(text) {
+  const raw = String(text || "").trim();
+  if (!raw) throw new Error("还没有内容。请先导入文件或粘贴同步稿。");
+  const fence = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const body = fence ? fence[1].trim() : raw;
+  const start = body.indexOf("{");
+  const end = body.lastIndexOf("}");
+  if (start < 0 || end <= start) throw new Error("没有找到可解析的 JSON。");
+  return JSON.parse(body.slice(start, end + 1));
+}
+
+function normalizeSnapshot(raw) {
+  if (!raw || typeof raw !== "object") throw new Error("同步稿格式不对。");
+  if (raw.kind !== "crisis-dashboard-snapshot") throw new Error("这不是看板用的判断稿。请使用每天发出的那份文件。");
+  if (Number(raw.version) !== 1) throw new Error("这份判断稿版本还不被当前看板支持。");
+  if (!raw.asOf) throw new Error("判断稿缺少日期。");
+  const src = raw.signs;
+  const map = {};
+  if (Array.isArray(src)) {
+    src.forEach(item => { if (item && item.id) map[item.id] = item; });
+  } else if (src && typeof src === "object") {
+    Object.keys(src).forEach(id => { map[id] = Object.assign({ id }, src[id]); });
+  } else {
+    throw new Error("判断稿缺少诊断项。");
+  }
+  const signs = {};
+  SIGNS.forEach(s => {
+    const item = map[s.id] || {};
+    const st = item.state || "insufficient";
+    if (!SIGN_STATE_LABEL[st]) throw new Error(`诊断项「${s.text}」的判断状态无效。`);
+    const apply = item.apply != null ? !!item.apply : st === "supported";
+    const sources = Array.isArray(item.sources) ? item.sources.filter(x => x && (x.title || x.url)).map(x => ({
+      title: String(x.title || x.url || "来源"),
+      url: String(x.url || "")
+    })) : [];
+    signs[s.id] = {
+      id: s.id,
+      state: st,
+      apply,
+      evidence: item.evidence || "",
+      note: item.note || "",
+      sources
+    };
+  });
+  return {
+    version: 1,
+    kind: "crisis-dashboard-snapshot",
+    asOf: String(raw.asOf),
+    asOfLabel: String(raw.asOfLabel || raw.asOf),
+    sessionNote: String(raw.sessionNote || ""),
+    summary: String(raw.summary || ""),
+    closerPaths: Array.isArray(raw.closerPaths) ? raw.closerPaths.map(String) : [],
+    closerNote: String(raw.closerNote || ""),
+    caveat: String(raw.caveat || "这是对公开信息的教学对照，不是在断言危机已经发生或即将发生，也不是投资建议。"),
+    signs
+  };
+}
+
+function showSyncError(msg) {
+  const el = $("syncError");
+  if (!msg) { el.hidden = true; el.textContent = ""; return; }
+  el.hidden = false;
+  el.textContent = msg;
+}
+
+function openSync(prefill, fromApplied) {
+  const mask = $("syncMask");
+  mask.hidden = false;
+  showSyncError("");
+  if (prefill) {
+    try {
+      const snap = prefill.kind ? normalizeSnapshot(prefill) : prefill;
+      $("syncPaste").value = JSON.stringify(prefill.kind ? prefill : snap, null, 2);
+      renderSyncPreview(snap, fromApplied);
+    } catch (err) {
+      $("syncPreview").innerHTML = "";
+      $("syncActions").hidden = true;
+      showSyncError(err.message || "无法打开这份判断。");
+    }
+  } else {
+    if (!fromApplied) $("syncPaste").value = $("syncPaste").value || "";
+    if (!syncDraft) {
+      $("syncPreview").innerHTML = "";
+      $("syncActions").hidden = true;
+    }
+  }
+}
+
+function closeSync() {
+  $("syncMask").hidden = true;
+}
+
+function renderSyncPreview(snap, fromApplied) {
+  syncDraft = snap;
+  syncPicks = new Set(SIGNS.filter(s => snap.signs[s.id] && snap.signs[s.id].apply).map(s => s.id));
+  const closer = (snap.closerPaths || []).map(id => SCENARIOS[id] ? SCENARIOS[id].title : id).filter(Boolean);
+  const head = `
+    <div class="sync-summary">
+      <b>${esc(snap.asOfLabel || snap.asOf)}</b>
+      ${snap.sessionNote ? `<div class="sign-note">${esc(snap.sessionNote)}</div>` : ""}
+      ${snap.summary ? `<p>${esc(snap.summary)}</p>` : ""}
+      ${closer.length ? `<p>材料认为更值得先对照：<b>${esc(closer.join("、"))}</b>。采用后只改勾选，不会自动跳到某条路径。</p>` : ""}
+    </div>`;
+  const rows = SIGNS.map(s => {
+    const e = snap.signs[s.id];
+    const src = (e.sources || []).map(x => x.url
+      ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>`
+      : esc(x.title)).join(" · ");
+    return `<label class="sync-row">
+      <input type="checkbox" data-id="${s.id}" ${syncPicks.has(s.id) ? "checked" : ""} />
+      <span>
+        ${esc(s.text)}
+        <span class="sign-pill ${e.state}">${SIGN_STATE_LABEL[e.state]}</span>
+        ${e.evidence ? `<span class="sign-pill">${esc(e.evidence)}</span>` : ""}
+        ${e.note ? `<div class="why">${esc(e.note)}</div>` : ""}
+        ${src ? `<div class="src">${src}</div>` : ""}
+      </span>
+    </label>`;
+  }).join("");
+  $("syncPreview").innerHTML = head + rows + `<p class="sync-caveat">${esc(snap.caveat)}</p>`;
+  $("syncPreview").querySelectorAll("input[type=checkbox]").forEach(inp => {
+    inp.addEventListener("change", () => {
+      if (inp.checked) syncPicks.add(inp.dataset.id);
+      else syncPicks.delete(inp.dataset.id);
+    });
+  });
+  $("syncActions").hidden = false;
+  $("syncApplyBtn").textContent = fromApplied ? "按预览重新采用" : "采用这次判断";
+}
+
+function persistSnapshot() {
+  try {
+    localStorage.setItem(SNAP_KEY, JSON.stringify({
+      snapshot: state.snapshot,
+      signs: [...state.signs]
+    }));
+  } catch (e) {}
+}
+
+function applySync() {
+  if (!syncDraft) return;
+  state.snapshot = syncDraft;
+  state.signs = new Set(syncPicks);
+  persistSnapshot();
+  closeSync();
+  renderAll();
+}
+
+function clearSnapshot() {
+  state.snapshot = null;
+  try { localStorage.removeItem(SNAP_KEY); } catch (e) {}
+  renderAll();
+}
+
+function parseAndPreview(text) {
+  try {
+    showSyncError("");
+    const snap = normalizeSnapshot(extractJson(text));
+    renderSyncPreview(snap, false);
+  } catch (err) {
+    syncDraft = null;
+    $("syncPreview").innerHTML = "";
+    $("syncActions").hidden = true;
+    showSyncError(err.message || "无法解析这份判断稿。");
+  }
+}
+
+function snapshotHref() {
+  const u = new URL(DEFAULT_SYNC_URL, window.location.href);
+  u.searchParams.set("t", String(Date.now()));
+  return u.toString();
+}
+
+async function fetchRemoteSnapshot() {
+  if (location.protocol === "file:") {
+    throw new Error("本地文件无法自动同步。请打开 GitHub 上的网页版，或在下方导入判断稿。");
+  }
+  const res = await fetch(snapshotHref(), { cache: "no-store" });
+  if (!res.ok) throw new Error("没有读到网上的判断稿，可先导入文件。");
+  return normalizeSnapshot(extractJson(await res.text()));
+}
+
+async function checkRemoteSnapshot(auto) {
+  try {
+    const snap = await fetchRemoteSnapshot();
+    pendingRemote = snap;
+    if (auto) {
+      renderSyncMeta();
+      return;
+    }
+    showSyncError("");
+    $("syncPaste").value = JSON.stringify(snap, null, 2);
+    renderSyncPreview(snap, false);
+  } catch (err) {
+    if (!auto) {
+      pendingRemote = pendingRemote || null;
+      showSyncError(err.message || "自动同步暂不可用，可导入文件或粘贴同步稿。");
+    } else {
+      renderSyncMeta();
+    }
+  }
+}
+
+function bindSync() {
+  $("syncBtn").addEventListener("click", () => {
+    openSync(null, false);
+    checkRemoteSnapshot(false);
+  });
+  $("syncClose").addEventListener("click", closeSync);
+  $("syncCancelBtn").addEventListener("click", closeSync);
+  $("syncMask").addEventListener("click", e => { if (e.target === $("syncMask")) closeSync(); });
+  $("syncFileBtn").addEventListener("click", () => $("syncFile").click());
+  $("syncFile").addEventListener("change", e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      $("syncPaste").value = String(reader.result || "");
+      parseAndPreview($("syncPaste").value);
+    };
+    reader.readAsText(file, "utf-8");
+    e.target.value = "";
+  });
+  $("syncParseBtn").addEventListener("click", () => parseAndPreview($("syncPaste").value));
+  $("syncApplyBtn").addEventListener("click", applySync);
+}
+
+function loadSavedSnapshot() {
+  try {
+    const raw = localStorage.getItem(SNAP_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    const payload = saved && saved.snapshot ? saved.snapshot : saved;
+    state.snapshot = normalizeSnapshot(payload);
+    if (Array.isArray(saved.signs)) state.signs = new Set(saved.signs);
+  } catch (e) {
+    state.snapshot = null;
+  }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  bind();
+  loadSavedSnapshot();
+  renderAll();
+  checkRemoteSnapshot(true);
+});
+
+</script>
+</body>
+</html>

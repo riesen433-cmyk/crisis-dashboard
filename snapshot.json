@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "kind": "crisis-dashboard-snapshot",
+  "asOf": "2026-11-17",
+  "asOfLabel": "2026-11-17（上海时间）",
+  "sessionNote": "截至美股 2026-11-16（周一）收盘，以及当日已公布的公开行情、宏观数据和美联储讲话。来源请自行核对原文。",
+  "summary": "最近三个交易日科技股明显调整，芯片和亚洲供应链跌得更深，但就业、增长和银行信贷的最新官方数据仍大体稳健，信用利差只是小幅走阔，还看不到融资断裂或全面危机。更值得先对照的是局部估值调整，而不是已经切换到信用危机、滞胀或资产负债表衰退。本周还有英伟达财报等事件，判断随时可能被新信息改写。",
+  "closerPaths": [
+    "local"
+  ],
+  "closerNote": "目前更吻合的是高估值科技调整、实体经济数据尚未同步恶化。资本开支下修是否传到其他行业、信用是否失控，仍需要继续观察，今天不能提前当成已经发生。",
+  "caveat": "这是对公开信息的教学对照，不是在断言危机已经发生或即将发生，也不是投资建议。附件中的市场数字和讲话请自行核对原文。",
+  "signs": {
+    "aiDrop": {
+      "state": "supported",
+      "apply": true,
+      "evidence": "事实观察",
+      "note": "周一纳斯达克跌 2.49%，标普 500 跌 1.92%，芯片板块跌约 5.3%，已是连续第三个下跌交易日，标普出现 6 月以来最差的三连跌；台湾加权和台积电等亚洲供应链跌幅更大。这是近期价格上的明显调整，但持续天数仍短，指数绝对水平也仍高，还不是已经完成的崩盘。",
+      "sources": [
+        {
+          "title": "HLB 2026-11-17 市场日报",
+          "url": "https://www.hlb.com.my/content/dam/hlb/my/docs/pdf/Global_Markets/daily-market-watch/2026/17-11-2026.pdf"
+        },
+        {
+          "title": "路透报道转载（The Star）",
+          "url": "https://www.thestar.com.my/business/2026/11/17/stocks-end-lower-ahead-of-nvidia-earnings-and-anthropic-ipo-oil-drops"
+        }
+      ]
+    },
+    "broadOk": {
+      "state": "supported",
+      "apply": true,
+      "evidence": "事实观察",
+      "note": "10 月非农就业增加 16.5 万人，高于当时市场预期，失业率降至 4.1%；三季度实际 GDP 折年率 3.4%。美联储 11 月金融稳定报告仍把企业和家庭债务脆弱性看作总体温和。这些是滞后数据，不能证明本轮股价调整不会向实体传导，但就目前已公布的官方数字而言，损失主要还留在股东一侧。",
+      "sources": [
+        {
+          "title": "摩根资产 经济更新（转述 10 月就业与三季度 GDP）",
+          "url": "https://am.jpmorgan.com/content/dam/jpm-am-aem/americas/us/en/insights/market-insights/wmr/economic_update.pdf"
+        },
+        {
+          "title": "美联储金融稳定报告（2026-11-13）",
+          "url": "https://www.federalreserve.gov/publications/files/financial-stability-report-20261113.pdf"
+        }
+      ]
+    },
+    "capexCut": {
+      "state": "not_supported",
+      "apply": false,
+      "evidence": "事实观察",
+      "note": "美联储最新金融稳定报告和巴尔理事 11 月 16 日讲话，仍把当前主线写成人工智能投资热和数据中心债务扩张，而不是资本开支已经明显下修并传到非 AI 行业。商务部对先进芯片远程访问的新限制可能改变后续需求，但这是风险，还不是已经实现的订单塌陷。纽约联储 11 月帝国州制造业指数从 25.5 回落到 7.8，仍为正值，不足以单独证明资本开支周期已经转折。",
+      "sources": [
+        {
+          "title": "美联储金融稳定报告（2026-11-13）",
+          "url": "https://www.federalreserve.gov/publications/files/financial-stability-report-20261113.pdf"
+        },
+        {
+          "title": "巴尔理事 2026-11-16 讲话",
+          "url": "https://www.federalreserve.gov/newsevents/speech/barr20261116a.htm"
+        }
+      ]
+    },
+    "creditBreak": {
+      "state": "not_supported",
+      "apply": false,
+      "evidence": "事实观察",
+      "note": "周一美国投资级信用利差走阔 2 个基点至 88 个基点，高收益利差走阔 11 个基点至 327 个基点。这是风险偏好下降时的常见反应，幅度远达不到融资断裂、赎回潮或利差失控。金融稳定报告也仍写企业债利差整体低于长期中位数，高收益只是温和上升。",
+      "sources": [
+        {
+          "title": "OCBC 每日国债展望 2026-11-17",
+          "url": "https://www.ocbc.com/iwov-resources/sg/ocbc/gbc/pdf/daily%20treasury%20outlook/2026/dto%20171126.pdf"
+        },
+        {
+          "title": "美联储金融稳定报告（2026-11-13）",
+          "url": "https://www.federalreserve.gov/publications/files/financial-stability-report-20261113.pdf"
+        }
+      ]
+    },
+    "dashCash": {
+      "state": "not_supported",
+      "apply": false,
+      "evidence": "条件推断",
+      "note": "这是连续三个交易日的调整，不是以小时或单日崩盘的方式抛售各类优质资产换现金。长债收益率周一还略有下降，更像普通风险回避，而不是流动性骤停。",
+      "sources": [
+        {
+          "title": "HLB 2026-11-17 市场日报",
+          "url": "https://www.hlb.com.my/content/dam/hlb/my/docs/pdf/Global_Markets/daily-market-watch/2026/17-11-2026.pdf"
+        }
+      ]
+    },
+    "policyFast": {
+      "state": "not_supported",
+      "apply": false,
+      "evidence": "事实观察",
+      "note": "政策方向与“立刻提供流动性或大规模财政托底”相反。联邦基金目标区间仍在 3.75%–4.00%，市场在为 12 月可能加息定价；没有看到针对这次股价调整的紧急流动性安排。",
+      "sources": [
+        {
+          "title": "路透报道转载（The Star）",
+          "url": "https://www.thestar.com.my/business/2026/11/17/stocks-end-lower-ahead-of-nvidia-earnings-and-anthropic-ipo-oil-drops"
+        },
+        {
+          "title": "摩根资产 经济更新",
+          "url": "https://am.jpmorgan.com/content/dam/jpm-am-aem/americas/us/en/insights/market-insights/wmr/economic_update.pdf"
+        }
+      ]
+    },
+    "debtMin": {
+      "state": "not_supported",
+      "apply": false,
+      "evidence": "事实观察",
+      "note": "最新增长和就业数据仍然偏强，物价也未进入低迷。金融稳定报告写企业债务相对 GDP 在逐渐下降，但这是温和去杠杆，远不是宽松之后信贷仍不扩张、企业家庭转向缩表还债的资产负债表衰退图景。",
+      "sources": [
+        {
+          "title": "美联储金融稳定报告（2026-11-13）",
+          "url": "https://www.federalreserve.gov/publications/files/financial-stability-report-20261113.pdf"
+        }
+      ]
+    },
+    "stockBondDown": {
+      "state": "weak",
+      "apply": false,
+      "evidence": "条件推断",
+      "note": "通胀仍然偏黏：10 月 CPI 环比 0.4%，核心环比 0.3%，市场因此在定价 12 月加息，政策确实不容易痛快放松。但周一股票下跌时，10 年期美债收益率反而略降到约 5.13%，30 年期也略降，还没有出现股票和长期国债一起跌的确认。更长一段时间里国债收益率确实明显抬升，需要继续观察，今天不勾选。",
+      "sources": [
+        {
+          "title": "路透报道转载（The Star）",
+          "url": "https://www.thestar.com.my/business/2026/11/17/stocks-end-lower-ahead-of-nvidia-earnings-and-anthropic-ipo-oil-drops"
+        },
+        {
+          "title": "U.S. Bank 经济周报 2026-11-13",
+          "url": "https://www.usbank.com/content/dam/usbank/en/documents/pdfs/corporate-and-commercial-banking/econ-weekly-pdf-11-13-26.pdf"
+        }
+      ]
+    },
+    "commodityUp": {
+      "state": "not_supported",
+      "apply": false,
+      "evidence": "事实观察",
+      "note": "周一 WTI 原油跌约 3.2% 至 85.72 美元，布伦特跌约 3.5%，市场叙事更偏供应转过剩，而不是供给约束推涨。黄金和铜也下跌。食品期货涨跌互现，还不足以把当前主线写成供给冲击型商品上涨。",
+      "sources": [
+        {
+          "title": "HLB 2026-11-17 市场日报",
+          "url": "https://www.hlb.com.my/content/dam/hlb/my/docs/pdf/Global_Markets/daily-market-watch/2026/17-11-2026.pdf"
+        },
+        {
+          "title": "OCBC 每日国债展望 2026-11-17",
+          "url": "https://www.ocbc.com/iwov-resources/sg/ocbc/gbc/pdf/daily%20treasury%20outlook/2026/dto%20171126.pdf"
+        }
+      ]
+    },
+    "havenFail": {
+      "state": "not_supported",
+      "apply": false,
+      "evidence": "事实观察",
+      "note": "风险资产下跌时，美国国债收益率略降，美元指数反而小幅走强到约 103.59。这更接近普通的避险流向美元和美债，而不是核心储备资产遭到抛售、本币走弱的主权压力。",
+      "sources": [
+        {
+          "title": "HLB 2026-11-17 市场日报",
+          "url": "https://www.hlb.com.my/content/dam/hlb/my/docs/pdf/Global_Markets/daily-market-watch/2026/17-11-2026.pdf"
+        }
+      ]
+    },
+    "goldSold": {
+      "state": "weak",
+      "apply": false,
+      "evidence": "条件推断",
+      "note": "现货黄金周一跌约 0.7% 至约 3,851 美元，盘中还触及 2025 年 10 月以来低点，当天没有立刻起到保护作用。但跌幅远小于科技股，也还看不到流动性危机里那种黄金被一起卖掉换现金的证据，因此不勾选。",
+      "sources": [
+        {
+          "title": "路透报道转载（The Star）",
+          "url": "https://www.thestar.com.my/business/2026/11/17/stocks-end-lower-ahead-of-nvidia-earnings-and-anthropic-ipo-oil-drops"
+        }
+      ]
+    },
+    "earnBack": {
+      "state": "not_supported",
+      "apply": false,
+      "evidence": "事实观察",
+      "note": "金融稳定报告仍认为股市估值偏高。本周市场焦点是英伟达财报和 Anthropic 上市，还不是危机过后存活公司订单回升、估值回到可计算水平的修复阶段。",
+      "sources": [
+        {
+          "title": "美联储金融稳定报告（2026-11-13）",
+          "url": "https://www.federalreserve.gov/publications/files/financial-stability-report-20261113.pdf"
+        },
+        {
+          "title": "路透报道转载（The Star）",
+          "url": "https://www.thestar.com.my/business/2026/11/17/stocks-end-lower-ahead-of-nvidia-earnings-and-anthropic-ipo-oil-drops"
+        }
+      ]
+    }
+  }
+}
