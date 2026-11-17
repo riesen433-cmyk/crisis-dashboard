@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>危机路径终极看板</title>
   <style>
 :root {
@@ -23,6 +23,7 @@
   --ok: #247e3c;
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 16px 40px rgba(0, 0, 0, 0.06);
   --radius: 20px;
+  --dock-space: calc(96px + env(safe-area-inset-bottom, 0px));
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   --mono: "SF Mono", "Menlo", "IBM Plex Mono", monospace;
 }
@@ -36,11 +37,13 @@ html, body {
   letter-spacing: -0.011em;
   -webkit-font-smoothing: antialiased;
 }
-body { min-height: 100vh; }
+body { min-height: 100vh; min-height: 100dvh; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 button, input, select { font-family: inherit; }
-.wrap { width: min(1080px, calc(100% - 48px)); margin: 0 auto; }
+.wrap { width: min(1160px, calc(100% - 48px)); margin: 0 auto; }
+
+main { padding: 16px 0 var(--dock-space); }
 
 .topbar {
   position: sticky; top: 0; z-index: 40;
@@ -50,69 +53,55 @@ button, input, select { font-family: inherit; }
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 .topbar-inner {
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  height: 52px;
+  display: flex; align-items: center; gap: 10px 16px;
+  min-height: 52px; height: auto; padding: 8px 0;
+  flex-wrap: wrap;
 }
 .brand-kicker { display: none; }
 .brand h1 {
   font-size: 17px; font-weight: 600; letter-spacing: -0.01em; line-height: 1;
 }
-.top-note { color: var(--muted); font-size: 12px; text-align: right; max-width: 420px; line-height: 1.35; }
-
-.hero {
-  padding: 84px 0 56px;
-  text-align: center;
-  max-width: 820px;
-  margin: 0 auto;
+.top-note {
+  color: var(--muted); font-size: 12px; text-align: left;
+  flex: 1 1 160px; line-height: 1.35; max-width: none;
 }
-.hero-eyebrow {
-  font-size: 17px; font-weight: 600; color: var(--accent); margin-bottom: 10px;
+.topbar-actions {
+  display: flex; align-items: center; gap: 10px;
+  margin-left: auto; flex: 0 0 auto;
 }
-.hero h1, .hero-title {
-  font-size: clamp(40px, 7vw, 64px);
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.05;
-  margin: 0 0 18px;
+.sync-meta-top {
+  font-size: 12px; color: var(--muted); line-height: 1.3;
+  max-width: 220px; text-align: right;
 }
-.hero p, .hero-sub {
-  color: var(--text-dim);
-  font-size: 21px;
-  line-height: 1.4;
-  letter-spacing: -0.015em;
-  font-weight: 400;
-}
-.hero-note {
-  margin-top: 16px !important;
-  font-size: 14px !important;
-  color: var(--faint) !important;
+.sync-meta-top.pending, .sync-meta-top.pending button { color: var(--accent); font-weight: 600; }
+.sync-meta-top button {
+  border: 0; background: none; color: inherit; font-size: 12px;
+  cursor: pointer; padding: 0; font-weight: 600;
 }
 
-.section-title {
-  font-size: clamp(28px, 4vw, 40px);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  margin: 72px 0 12px;
-  text-align: center;
+.screen[hidden] { display: none !important; }
+.intro { margin: 8px 0 16px; }
+.intro h2 {
+  font-size: 28px; font-weight: 600; letter-spacing: -0.022em; line-height: 1.15;
 }
-.section-lead {
-  color: var(--text-dim);
-  margin: 0 auto 28px;
-  max-width: 680px;
-  text-align: center;
-  font-size: 19px;
-  line-height: 1.45;
+.intro p { color: var(--text-dim); font-size: 16px; margin-top: 8px; max-width: 46em; }
+.screen-head { margin: 8px 0 14px; }
+.screen-head + .screen-head, .table-wrap + .screen-head, .grid-2 + .screen-head, .layers + .screen-head {
+  margin-top: 28px;
 }
+.screen-head h2 {
+  font-size: 22px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2;
+}
+.screen-head p { color: var(--text-dim); font-size: 15px; margin-top: 4px; max-width: 52em; }
 
-.scenarios { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin: 8px 0 28px; }
+.scenarios { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin: 0 0 16px; }
 #scenarios.scenarios { display: flex; flex-direction: column; gap: 0; }
 .sc-card {
   text-align: left; background: var(--bg);
   border: 1px solid transparent;
-  border-radius: 18px; padding: 20px 18px 22px; cursor: pointer; color: var(--text);
+  border-radius: 16px; padding: 12px 14px 14px; cursor: pointer; color: var(--text);
   transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
-  min-height: 168px;
+  min-height: 0;
 }
 .sc-card:hover { transform: scale(1.01); }
 .sc-card.active {
@@ -120,34 +109,34 @@ button, input, select { font-family: inherit; }
   box-shadow: var(--shadow);
   border-color: rgba(0, 113, 227, 0.28);
 }
-.sc-id { font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 8px; letter-spacing: 0.01em; }
-.sc-card h3 { font-size: 17px; font-weight: 600; line-height: 1.25; letter-spacing: -0.015em; margin-bottom: 8px; }
-.sc-card p { font-size: 13px; color: var(--muted); line-height: 1.4; }
-.sc-card .analog { margin-top: 12px; font-size: 12px; color: var(--faint); }
+.sc-id { font-size: 11px; color: var(--accent); font-weight: 600; margin-bottom: 5px; letter-spacing: 0.01em; }
+.sc-card h3 { font-size: 15px; font-weight: 600; line-height: 1.25; letter-spacing: -0.015em; margin-bottom: 4px; }
+.sc-card p { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.sc-card .analog { margin-top: 6px; font-size: 11px; color: var(--faint); }
 
 .controls {
-  display: grid; grid-template-columns: 1.15fr 1fr 1fr 1fr; gap: 12px;
-  margin: 0 0 28px;
+  display: grid; grid-template-columns: 1.15fr 1fr 1fr 1fr; gap: 10px;
+  margin: 0 0 16px;
 }
 .ctrl {
-  background: var(--bg); border-radius: 18px; padding: 18px 18px 16px;
+  background: var(--bg); border-radius: 16px; padding: 14px 14px 12px;
 }
-.ctrl label { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+.ctrl label { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
 .ctrl label b { color: var(--text); font-weight: 600; font-size: 15px; }
 .ctrl input[type=range] { width: 100%; accent-color: var(--accent); }
-.ctrl .hint { font-size: 12px; color: var(--faint); margin-top: 8px; line-height: 1.4; }
+.ctrl .hint { font-size: 12px; color: var(--faint); margin-top: 6px; line-height: 1.4; }
 .ctrl.disabled { opacity: 0.4; pointer-events: none; }
 
 .chart-card {
   background: var(--bg-pure);
   border-radius: 28px;
-  padding: 28px 24px 16px;
+  padding: 20px 20px 12px;
   box-shadow: var(--shadow);
   border: 1px solid var(--line);
 }
-.chart-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 12px; }
-.chart-head h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
-.chart-sub { color: var(--muted); font-size: 14px; margin-top: 6px; line-height: 1.4; max-width: 52ch; }
+.chart-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 10px; }
+.chart-head h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
+.chart-sub { color: var(--muted); font-size: 13px; margin-top: 4px; line-height: 1.4; max-width: 52ch; }
 .chart-tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .btn {
   background: #e8e8ed; color: var(--text); border: none;
@@ -158,7 +147,7 @@ button, input, select { font-family: inherit; }
 .btn.primary { background: var(--accent); color: #fff; }
 .btn.primary:hover { background: var(--accent-hover); }
 .btn.ghost { background: transparent; }
-#chart { width: 100%; height: 440px; display: block; cursor: crosshair; }
+#chart { width: 100%; height: clamp(400px, 56vh, 640px); display: block; cursor: crosshair; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 4px 4px; }
 .leg { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); }
 .leg i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
@@ -167,7 +156,7 @@ button, input, select { font-family: inherit; }
 .phase-tag { font-size: 13px; color: var(--accent); font-weight: 600; }
 .month-tag { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
-.assets { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 8px; }
+.assets { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 8px; }
 .asset {
   display: inline-flex; align-items: center; gap: 6px;
   border: none; background: var(--bg);
@@ -184,11 +173,11 @@ button, input, select { font-family: inherit; }
 .pct.down { color: var(--danger); }
 .hint-line { font-size: 13px; color: var(--faint); margin: 4px 0 0; }
 
-.grid-2 { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; margin-top: 36px; }
+.grid-2 { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; margin-top: 8px; }
 .panel {
-  background: var(--bg); border-radius: 24px; padding: 28px 26px 24px;
+  background: var(--bg); border-radius: 24px; padding: 24px 22px 20px;
 }
-.panel h3 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
+.panel h3 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 10px; }
 .panel h4 { font-size: 14px; color: var(--accent); margin: 18px 0 6px; font-weight: 600; }
 .panel p, .panel li { color: var(--text-dim); font-size: 15px; line-height: 1.5; }
 .panel ul { padding-left: 1.15em; }
@@ -197,9 +186,11 @@ button, input, select { font-family: inherit; }
 .kv { display: grid; grid-template-columns: 88px 1fr; gap: 6px 10px; font-size: 14px; margin: 8px 0 4px; }
 .kv dt { color: var(--muted); }
 .kv dd { color: var(--text); }
+.limits { margin: 8px 0 0; }
+.limits li { margin: 8px 0; }
 
 .table-wrap {
-  overflow-x: auto; margin: 8px 0 20px;
+  overflow-x: auto; margin: 8px 0 12px;
   background: var(--bg); border-radius: 20px;
 }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -213,15 +204,12 @@ tr:last-child td { border-bottom: none; }
 .pos { color: var(--ok); }
 
 .fork {
-  margin: 56px 0 24px; padding: 36px 40px;
+  margin: 0 0 24px; padding: 24px 26px;
   background: #1d1d1f; color: #f5f5f7;
-  border-radius: 28px;
+  border-radius: 24px;
 }
-.fork h3 { font-size: 32px; font-weight: 600; letter-spacing: -0.022em; margin-bottom: 12px; color: #fff; }
-.fork p { color: #a1a1a6; font-size: 17px; line-height: 1.47; }
-
-.blocks { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-.fineprint { color: var(--faint); font-size: 12px; line-height: 1.5; padding: 28px 0 72px; text-align: center; max-width: 680px; margin: 0 auto; }
+.fork h3 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 10px; color: #fff; }
+.fork p { color: #a1a1a6; font-size: 15px; line-height: 1.5; }
 
 .compare-row { display: flex; align-items: center; gap: 8px; }
 .compare-row span { font-size: 13px; color: var(--muted); }
@@ -230,9 +218,6 @@ tr:last-child td { border-bottom: none; }
   border-radius: 980px; padding: 8px 12px; font-size: 13px;
   appearance: none; padding-right: 28px;
 }
-
-.band { background: var(--bg); padding: 72px 0 24px; margin: 64px 0 0; }
-.band .wrap { }
 
 #tip {
   position: fixed; display: none; z-index: 50;
@@ -249,19 +234,6 @@ tr:last-child td { border-bottom: none; }
   pointer-events: none;
 }
 
-@media (max-width: 980px) {
-  .scenarios, .controls, .grid-2, .blocks { grid-template-columns: 1fr; }
-  .topbar-inner { height: auto; padding: 10px 0; }
-  .top-note { text-align: left; }
-  #chart { height: 340px; }
-  .wrap { width: min(1080px, calc(100% - 32px)); }
-  .hero { padding: 56px 0 36px; }
-  .fork { padding: 28px 22px; }
-  .chart-head { flex-direction: column; }
-}
-
-.wrap { width: min(1160px, calc(100% - 48px)); }
-.hero { max-width: 860px; }
 .badge {
   display: inline-block; font-size: 11px; font-weight: 600;
   color: var(--accent); background: var(--accent-dim);
@@ -269,11 +241,11 @@ tr:last-child td { border-bottom: none; }
 }
 .group-label {
   font-size: 13px; color: var(--muted); font-weight: 600;
-  margin: 22px 0 10px; letter-spacing: -0.01em;
+  margin: 14px 0 8px; letter-spacing: -0.01em;
 }
-.scenarios { margin-bottom: 8px; }
+#scenarios .group-label:first-child { margin-top: 0; }
 .diag {
-  background: var(--bg); border-radius: 24px; padding: 28px 26px 22px; margin: 8px 0 28px;
+  background: var(--bg); border-radius: 24px; padding: 22px 22px 18px; margin: 0;
 }
 .diag h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 8px; }
 .diag .lead { color: var(--text-dim); font-size: 15px; margin-bottom: 16px; }
@@ -313,27 +285,17 @@ tr:last-child td { border-bottom: none; }
 .preset .fail { color: var(--danger); font-size: 12px; margin-top: 8px; }
 .note-bar {
   background: #fff3cd; color: #3d3200; border-radius: 16px;
-  padding: 12px 16px; font-size: 13px; line-height: 1.5; margin: 0 0 16px;
+  padding: 10px 14px; font-size: 13px; line-height: 1.5; margin: 0 0 12px;
 }
-.layers { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 8px 0 24px; }
-.layer { background: var(--bg); border-radius: 18px; padding: 16px 14px; }
+.layers { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 0 0 24px; }
+.layer { background: var(--bg); border-radius: 18px; padding: 14px 12px; }
 .layer.active { outline: 2px solid var(--accent); background: var(--accent-dim); }
 .layer h3 { font-size: 14px; margin-bottom: 6px; }
 .layer p { font-size: 12px; color: var(--text-dim); line-height: 1.45; }
 .dl-csv { margin-left: auto; }
-@media (max-width: 980px) {
-  .checks, .form-grid, .preset-grid, .layers { grid-template-columns: 1fr; }
-}
 
-.diag-head {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 16px; margin-bottom: 8px;
-}
-.diag-head h2 { margin-bottom: 8px; }
-.diag-head .lead { margin-bottom: 0; }
-.diag-head .btn { flex: 0 0 auto; margin-top: 4px; }
 .sync-meta {
-  font-size: 13px; color: var(--muted); margin: 10px 0 14px; line-height: 1.5;
+  font-size: 13px; color: var(--muted); margin: 0 0 14px; line-height: 1.5;
 }
 .sync-meta b { color: var(--text); font-weight: 600; }
 .sync-meta button {
@@ -389,8 +351,60 @@ tr:last-child td { border-bottom: none; }
 .sync-row .src a { color: var(--accent); }
 .sync-actions { display: flex; gap: 10px; margin-top: 18px; }
 .sync-caveat { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+
+.dock {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 45;
+  display: flex; justify-content: center;
+  padding: 0 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+}
+.dock-pill {
+  pointer-events: auto;
+  display: flex; align-items: stretch; gap: 2px;
+  max-width: calc(100vw - 24px);
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 980px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  padding: 5px 6px;
+}
+.dock-pill::-webkit-scrollbar { display: none; }
+.dock-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px;
+  min-width: 64px; min-height: 52px;
+  padding: 6px 14px;
+  border-radius: 980px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 11px; font-weight: 500; letter-spacing: -0.01em;
+  line-height: 1.2;
+  flex: 0 0 auto;
+}
+.dock-item:hover { text-decoration: none; color: var(--text); background: rgba(0, 0, 0, 0.04); }
+.dock-item.active {
+  color: var(--accent);
+  background: var(--accent-dim);
+  font-weight: 600;
+}
+.dock-item svg { display: block; }
+
 @media (max-width: 980px) {
-  .diag-head { flex-direction: column; }
+  .scenarios, .controls, .grid-2 { grid-template-columns: 1fr; }
+  .checks, .form-grid, .preset-grid, .layers { grid-template-columns: 1fr; }
+  .topbar-inner { height: auto; padding: 8px 0; }
+  .top-note { text-align: left; flex-basis: 100%; order: 3; }
+  .topbar-actions { margin-left: auto; }
+  #chart { height: clamp(300px, 48vh, 420px); }
+  .wrap { width: min(1160px, calc(100% - 32px)); }
+  .fork { padding: 20px 18px; }
+  .chart-head { flex-direction: column; }
+  .intro h2 { font-size: 24px; }
+  .dock-item { min-width: 58px; padding: 6px 10px; }
 }
 
   </style>
@@ -399,203 +413,224 @@ tr:last-child td { border-bottom: none; }
 <header class="topbar">
   <div class="wrap topbar-inner">
     <div class="brand"><h1>危机路径终极看板</h1></div>
-    <p class="top-note">教学示意 · 曲线是人为校准的机制图，不是预测，也不是投资建议</p>
+    <p class="top-note">示意曲线，不是预测或投资建议</p>
+    <div class="topbar-actions">
+      <div class="sync-meta-top" id="syncMetaTop" hidden></div>
+      <button class="btn primary" id="syncBtn" type="button">同步当前判断</button>
+    </div>
   </div>
 </header>
 
 <main>
 <section class="wrap">
-  <section class="hero">
-    <p class="hero-eyebrow">教学模型</p>
-    <h1 class="hero-title">先判断断裂在哪一层，<br>再看资产怎么走</h1>
-    <p class="hero-sub">AI 股票下跌不等于已经发生经济危机。估值调整、需求衰退、信用断裂、资产负债表缩表、滞胀、流动性骤停和主权汇率压力，会逼出完全不同的曲线和策略。</p>
-    <p class="hero-note">所有路径都是示意，起点为冲击开始时的指数 100，看到第 48 个月。可以先勾选你看到的现象，再比较路径。</p>
+
+  <section class="screen" id="screen-diagnose" data-screen="diagnose" hidden>
+    <div class="intro">
+      <h2>先判断断裂在哪一层</h2>
+      <p>勾选当前更接近的现象。只会标出更吻合的路径，不给出发生概率；任何一项都不能单独判定危机。</p>
+    </div>
+    <div class="diag">
+      <div class="sync-meta" id="syncMeta"></div>
+      <div class="checks" id="signBox"></div>
+      <div class="diag-result" id="diagResult">尚未勾选。可直接到看板比较八条路径。</div>
+    </div>
   </section>
 
-  <div class="diag">
-    <div class="diag-head">
-      <div>
-        <h2>先做诊断</h2>
-        <p class="lead">勾选当前更接近的现象。看板只会标出更吻合的路径，不会给出发生概率。任何一项都不能单独判定危机。</p>
+  <section class="screen screen-board" id="screen-board" data-screen="board">
+    <div id="scenarios" class="scenarios"></div>
+
+    <div class="controls">
+      <div class="ctrl">
+        <label>示意波动幅度 <b id="sevVal">1.00×</b></label>
+        <input id="severity" type="range" min="0.7" max="1.4" step="0.05" value="1" />
+        <div class="hint">只放大或缩小相对 100 的偏离。1.0 是该路径的基准示意，不是历史校准。</div>
       </div>
-      <button class="btn primary" id="syncBtn" type="button">同步当前判断</button>
-    </div>
-    <div class="sync-meta" id="syncMeta"></div>
-    <div class="checks" id="signBox"></div>
-    <div class="diag-result" id="diagResult">尚未勾选。下面八条路径都可以直接比较。</div>
-  </div>
-
-  <div id="scenarios" class="scenarios"></div>
-
-  <div class="controls">
-    <div class="ctrl">
-      <label>示意波动幅度 <b id="sevVal">1.00×</b></label>
-      <input id="severity" type="range" min="0.7" max="1.4" step="0.05" value="1" />
-      <div class="hint">只放大或缩小相对 100 的偏离。1.0 是该路径的基准示意，不是历史校准。</div>
-    </div>
-    <div class="ctrl">
-      <label>政策响应速度 <b id="spdVal">中性</b></label>
-      <input id="speed" type="range" min="0.6" max="1.4" step="0.05" value="1" />
-      <div class="hint">越快，底部和修复越提前；越慢，冲击期拖得越长。</div>
-    </div>
-    <div class="ctrl">
-      <label>政策力度 <b id="strVal">中性</b></label>
-      <input id="strength" type="range" min="0.6" max="1.4" step="0.05" value="1" />
-      <div class="hint">同样“加强政策”，在普通衰退、滞胀、主权危机和资产负债表衰退里，对债券、黄金和股票的含义不同。</div>
-    </div>
-    <div class="ctrl" id="creditCtrl">
-      <label>信用传导程度 <b id="crdVal">0%</b></label>
-      <input id="credit" type="range" min="0" max="1" step="0.05" value="0" />
-      <div class="hint">仅用于资本开支需求衰退。0% 更像 2000 年，100% 则滑向 2008 年那样的信用危机。</div>
-    </div>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-head">
-      <div>
-        <h2 id="chartTitle">局部估值调整</h2>
-        <div class="chart-sub" id="chartSub"></div>
+      <div class="ctrl">
+        <label>政策响应速度 <b id="spdVal">中性</b></label>
+        <input id="speed" type="range" min="0.6" max="1.4" step="0.05" value="1" />
+        <div class="hint">越快，底部和修复越提前；越慢，冲击期拖得越长。</div>
       </div>
-      <div class="chart-tools">
-        <div class="seg" id="unitSeg">
-          <button data-unit="nom" class="on">名义</button>
-          <button data-unit="real">实际购买力</button>
+      <div class="ctrl">
+        <label>政策力度 <b id="strVal">中性</b></label>
+        <input id="strength" type="range" min="0.6" max="1.4" step="0.05" value="1" />
+        <div class="hint">同样“加强政策”，在普通衰退、滞胀、主权危机和资产负债表衰退里，对债券、黄金和股票的含义不同。</div>
+      </div>
+      <div class="ctrl" id="creditCtrl">
+        <label>信用传导程度 <b id="crdVal">0%</b></label>
+        <input id="credit" type="range" min="0" max="1" step="0.05" value="0" />
+        <div class="hint">仅用于资本开支需求衰退。0% 更像 2000 年，100% 则滑向 2008 年那样的信用危机。</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-head">
+        <div>
+          <h2 id="chartTitle">局部估值调整</h2>
+          <div class="chart-sub" id="chartSub"></div>
         </div>
-        <div class="seg" id="axisSeg">
-          <button data-axis="auto" class="on">纵轴自适应</button>
-          <button data-axis="fixed">固定纵轴</button>
+        <div class="chart-tools">
+          <div class="seg" id="unitSeg">
+            <button data-unit="nom" class="on">名义</button>
+            <button data-unit="real">实际购买力</button>
+          </div>
+          <div class="seg" id="axisSeg">
+            <button data-axis="auto" class="on">纵轴自适应</button>
+            <button data-axis="fixed">固定纵轴</button>
+          </div>
+          <div class="compare-row">
+            <span>对比路径</span>
+            <select id="compare"><option value="">不对比</option></select>
+          </div>
+          <button class="btn" id="cpiBtn">显示物价</button>
+          <button class="btn primary" id="playBtn">播放</button>
+          <button class="btn" id="resetBtn">恢复默认</button>
+          <button class="btn dl-csv" id="csvBtn">下载数据</button>
         </div>
-        <div class="compare-row">
-          <span>对比路径</span>
-          <select id="compare"><option value="">不对比</option></select>
+      </div>
+      <div class="note-bar" id="unitNote">当前是美元名义示意指数。实际购买力会扣除这条路径下的示意物价，物价本身也是人为设定的。</div>
+      <svg id="chart" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="资产路径图"></svg>
+      <div class="legend" id="legend"></div>
+      <div class="scrub">
+        <input id="monthRange" type="range" min="0" max="48" step="1" value="0" />
+        <span class="phase-tag" id="phaseTag">冲击期</span>
+        <span class="month-tag" id="monthTag">第 0 个月</span>
+      </div>
+    </div>
+
+    <div id="assets" class="assets"></div>
+    <p class="hint-line">点按资产可显示或隐藏曲线。虚线是对比路径。方向键逐月查看，空格键播放或暂停。宽基股票与 AI 科技有成分重叠，不能看成完全独立的两类资产。</p>
+  </section>
+
+  <section class="screen" id="screen-strategy" data-screen="strategy" hidden>
+    <div class="screen-head">
+      <h2>这条路径上的避风港</h2>
+      <p>同一资产在不同断裂层里角色不同。不要使用“危机就买黄金、国债或比特币”这种单一规则。</p>
+    </div>
+    <div class="table-wrap"><table class="haven" id="havenTable"></table></div>
+
+    <div class="grid-2">
+      <article class="panel" id="aboutPanel"></article>
+      <article class="panel" id="strategyPanel"></article>
+    </div>
+
+    <div class="screen-head">
+      <h2>可选约束</h2>
+      <p>空着就不会假定你的情况。填写后只改策略侧重点，不改曲线，也不生成专属仓位。</p>
+    </div>
+    <article class="panel">
+      <div class="form-grid">
+        <div>
+          <label for="levSel">是否有杠杆、保证金或浮动利率债务</label>
+          <select id="levSel">
+            <option value="">不填写</option>
+            <option value="yes">有</option>
+            <option value="no">没有</option>
+          </select>
         </div>
-        <button class="btn" id="cpiBtn">显示物价</button>
-        <button class="btn primary" id="playBtn">播放</button>
-        <button class="btn" id="resetBtn">恢复默认</button>
-        <button class="btn dl-csv" id="csvBtn">下载数据</button>
+        <div>
+          <label for="spendSel">未来 12 个月是否有较大的确定支出</label>
+          <select id="spendSel">
+            <option value="">不填写</option>
+            <option value="yes">有</option>
+            <option value="no">没有</option>
+          </select>
+        </div>
+        <div>
+          <label for="ccySel">主要支出币种</label>
+          <select id="ccySel">
+            <option value="">不填写</option>
+            <option value="usd">美元</option>
+            <option value="cny">人民币</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+        <div>
+          <label for="horSel">可承受的持有期限</label>
+          <select id="horSel">
+            <option value="">不填写</option>
+            <option value="lt1">不到 1 年</option>
+            <option value="y13">1 到 3 年</option>
+            <option value="gt3">3 年以上</option>
+          </select>
+        </div>
       </div>
+    </article>
+  </section>
+
+  <section class="screen" id="screen-compare" data-screen="compare" hidden>
+    <div class="screen-head">
+      <h2>当前设定下的路径摘要</h2>
+      <p>随路径和滑杆变化。最大回撤、见底时间和回到起点都来自这个示意模型，用来比较结构，不是对未来的承诺。</p>
     </div>
-    <div class="note-bar" id="unitNote">当前是美元名义示意指数。实际购买力会扣除这条路径下的示意物价，物价本身也是人为设定的。</div>
-    <svg id="chart" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="资产路径图"></svg>
-    <div class="legend" id="legend"></div>
-    <div class="scrub">
-      <input id="monthRange" type="range" min="0" max="48" step="1" value="0" />
-      <span class="phase-tag" id="phaseTag">冲击期</span>
-      <span class="month-tag" id="monthTag">第 0 个月</span>
+    <div class="table-wrap"><table id="statTable"></table></div>
+
+    <div class="screen-head">
+      <h2>对照组合</h2>
+      <p>这些权重只用来做压力比较，不是推荐仓位。默认按起点一次性配好后持有。可放到不同路径下，看同一套搭配会在哪里失配。</p>
     </div>
-  </div>
+    <div class="preset-grid" id="presetBox"></div>
+    <div class="table-wrap" style="margin-top:16px"><table id="presetTable"></table></div>
+  </section>
 
-  <div id="assets" class="assets"></div>
-  <p class="hint-line">点按资产即可显示或隐藏曲线。虚线是对比路径。方向键可逐月查看，空格键播放或暂停。宽基股票与 AI 科技有成分重叠，不能看成完全独立的两类资产。</p>
-
-  <h2 class="section-title">这条路径上，避风港还成不成立</h2>
-  <p class="section-lead">同一资产在不同断裂层里角色完全不同。不要使用“危机到来就买黄金、国债或比特币”这种单一规则。</p>
-  <div class="table-wrap"><table class="haven" id="havenTable"></table></div>
-
-  <div class="grid-2">
-    <article class="panel" id="aboutPanel"></article>
-    <article class="panel" id="strategyPanel"></article>
-  </div>
-
-  <h2 class="section-title">可选：你的约束会改变核对顺序</h2>
-  <p class="section-lead">空着就不会假定你的情况。填写后，只会改策略里的侧重点，不会改曲线，也不会生成专属仓位。</p>
-  <article class="panel">
-    <div class="form-grid">
-      <div>
-        <label for="levSel">是否有杠杆、保证金或浮动利率债务</label>
-        <select id="levSel">
-          <option value="">不填写</option>
-          <option value="yes">有</option>
-          <option value="no">没有</option>
-        </select>
-      </div>
-      <div>
-        <label for="spendSel">未来 12 个月是否有较大的确定支出</label>
-        <select id="spendSel">
-          <option value="">不填写</option>
-          <option value="yes">有</option>
-          <option value="no">没有</option>
-        </select>
-      </div>
-      <div>
-        <label for="ccySel">主要支出币种</label>
-        <select id="ccySel">
-          <option value="">不填写</option>
-          <option value="usd">美元</option>
-          <option value="cny">人民币</option>
-          <option value="other">其他</option>
-        </select>
-      </div>
-      <div>
-        <label for="horSel">可承受的持有期限</label>
-        <select id="horSel">
-          <option value="">不填写</option>
-          <option value="lt1">不到 1 年</option>
-          <option value="y13">1 到 3 年</option>
-          <option value="gt3">3 年以上</option>
-        </select>
-      </div>
+  <section class="screen" id="screen-notes" data-screen="notes" hidden>
+    <div class="fork">
+      <h3>如果起点是 AI 泡沫破裂</h3>
+      <p>先不要把它默认写成一次经济危机。更关键的分叉是：它只停留在估值调整，还是已经传到资本开支、就业和需求，再进一步顺着杠杆、私募信贷或银行资产负债表演变成信用危机，或者陷入长期还债和缩表。若破裂时通胀仍高、政策不能放松，还要对照滞胀，因为那时长债会失去避险功能。把“资本开支需求衰退”里的信用传导从 0% 拖到 100%，可以直接看见从 2000 年走向 2008 年时曲线如何改写。</p>
     </div>
-  </article>
 
-  <h2 class="section-title">当前设定下的路径摘要</h2>
-  <p class="section-lead">下表会随路径和滑杆一起变化。最大回撤、见底时间和回到起点，都是从这个示意模型里算出来的，用来比较结构，不是对未来的承诺。</p>
-  <div class="table-wrap"><table id="statTable"></table></div>
+    <div class="screen-head">
+      <h2>五层传导</h2>
+      <p>这些是可能发生的路径，不是必经步骤。当前路径会高亮它主要落在哪一层。</p>
+    </div>
+    <div class="layers" id="layers">
+      <article class="layer" data-layer="1"><h3>估值与融资</h3><p>增长或利润低于原先定价，相关股权先跌。股价、经营和融资条件可能不同步。</p></article>
+      <article class="layer" data-layer="2"><h3>资本开支与供应链</h3><p>云、模型和数据中心放缓投资，可能传到芯片、电力、建设和上下游，但不等于所有行业同时下降。</p></article>
+      <article class="layer" data-layer="3"><h3>就业与消费</h3><p>招聘、奖金和财富效应可能减弱。这是否变成广泛衰退，取决于相关活动和人群在整体经济中的比重。</p></article>
+      <article class="layer" data-layer="4"><h3>债务与金融体系</h3><p>若损失主要由股权承担，不一定变成系统性危机。若依赖借债、抵押和私募信贷，才可能出现违约和被迫出售。</p></article>
+      <article class="layer" data-layer="5"><h3>政策与第二次冲击</h3><p>降息不自动等于资产立刻上涨。能源、财政、汇率和主权问题可以同时出现，但不能都算成 AI 造成的。</p></article>
+    </div>
 
-  <h2 class="section-title">对照组合：看同一套搭配会在哪里失效</h2>
-  <p class="section-lead">这些权重来自对照材料里的示意搭配，只用来做压力比较，不是推荐仓位。默认按起点一次性配好后持有，中途不调仓。可以把它们放到不同路径下，看哪里会失配。</p>
-  <div class="preset-grid" id="presetBox"></div>
-  <div class="table-wrap" style="margin-top:16px"><table id="presetTable"></table></div>
-
-  <div class="fork">
-    <h3>如果起点是 AI 泡沫破裂</h3>
-    <p>先不要把它默认写成一次经济危机。更关键的分叉是：它只停留在估值调整，还是已经传到资本开支、就业和需求，再进一步顺着杠杆、私募信贷或银行资产负债表演变成信用危机，或者陷入长期还债和缩表。若破裂时通胀仍高、政策不能放松，还要对照滞胀，因为那时长债会失去避险功能。把“资本开支需求衰退”里的信用传导从 0% 拖到 100%，可以直接看见从 2000 年走向 2008 年时曲线如何改写。</p>
-  </div>
-
-  <h2 class="section-title">冲击可能经过的五层传导</h2>
-  <p class="section-lead">这些是可能发生的路径，不是必经步骤。传导到的层级越多，经济影响通常越广。当前路径会高亮它主要落在哪一层。</p>
-  <div class="layers" id="layers">
-    <article class="layer" data-layer="1"><h3>估值与融资</h3><p>增长或利润低于原先定价，相关股权先跌。股价、经营和融资条件可能不同步。</p></article>
-    <article class="layer" data-layer="2"><h3>资本开支与供应链</h3><p>云、模型和数据中心放缓投资，可能传到芯片、电力、建设和上下游，但不等于所有行业同时下降。</p></article>
-    <article class="layer" data-layer="3"><h3>就业与消费</h3><p>招聘、奖金和财富效应可能减弱。这是否变成广泛衰退，取决于相关活动和人群在整体经济中的比重。</p></article>
-    <article class="layer" data-layer="4"><h3>债务与金融体系</h3><p>若损失主要由股权承担，不一定变成系统性危机。若依赖借债、抵押和私募信贷，才可能出现违约和被迫出售。</p></article>
-    <article class="layer" data-layer="5"><h3>政策与第二次冲击</h3><p>降息不自动等于资产立刻上涨。能源、财政、汇率和主权问题可以同时出现，但不能都算成 AI 造成的。</p></article>
-  </div>
-
-  <h2 class="section-title">三份材料如何合并</h2>
-  <p class="section-lead">这份看板统一了三份判断说明里仍然成立的部分，也明确丢掉了容易误导的部分。</p>
-  <div class="blocks">
-    <article class="panel">
-      <h3>保留下来的判断</h3>
-      <p>先诊断断裂层，再谈策略。把局部估值调整单独列出，因为股价下跌不等于经济危机。把资产负债表衰退从普通需求衰退里分出来，因为它更像长期阴跌，宽松往往像推绳子。把流动性骤停后的强干预，和真正的信用崩溃分开。策略按阶段写成：看什么、先核对什么、可考虑什么、代价是什么、何时失效。可以切换名义和实际购买力，并看同一套对照组合在不同路径下哪里会失效。</p>
+    <article class="panel limits">
+      <h3>使用时记住</h3>
+      <ul>
+        <li>曲线是人为校准的机制图，用来比较方向、深度和节奏，不是预测、回测或投资建议。</li>
+        <li>起点为冲击开始时的指数 100，看到第 48 个月。播放和拖动只改变观察时点，不改已经生成的路径。</li>
+        <li>阶段和时钟只是分析框架，事件不必按同样步骤发生；不要把不同路径的关键时点混在一张图里读。</li>
+        <li>各路径冲击深度本身不同，比较时看形状和先后顺序，不要把终点高低当成预测优劣。</li>
+        <li>没有发生概率，也没有通用仓位权重。</li>
+        <li>股票、债券按含利息或分红的示意总回报；黄金、商品和房价是价格口径，房地产不含租金，不能直接当成同口径可投资回报。</li>
+      </ul>
     </article>
-    <article class="panel">
-      <h3>没有采用的做法</h3>
-      <p>没有把某一份材料里的具体仓位比例写成建议，也没有给路径或策略打出精确的匹配分数。没有把不同时钟的关键点混在一张图里。没有把未独立核对的机构数字或报道写成已发生的事实。曲线仍然是人为示意，用来比较方向、深度和节奏，不是回测，也不是预测。</p>
-    </article>
-  </div>
+  </section>
 
-  <h2 class="section-title">模型边界</h2>
-  <p class="section-lead">使用时请记住下面这些限制。看板把缺陷直接摆出来，是为了避免把演示曲线看成预测曲线。</p>
-  <div class="blocks">
-    <article class="panel">
-      <h3>它做了什么</h3>
-      <p>把历史上反复出现的机制写成可对比的示意路径：谁先跌、谁先被卖掉、政策来了之后谁先稳住、不同路径里避风港是否还成立。时间轴统一成冲击开始后的 48 个月，起点统一成 100。各路径的冲击深度本身不同，这是机制差异的一部分；比较时请看形状和先后顺序，不要把终点高低直接当成预测优劣。</p>
-    </article>
-    <article class="panel">
-      <h3>它没有做什么</h3>
-      <p>没有纳入交易成本、税收、个股存续、平台风险和真实时序数据。股票、债券、现金按含利息或分红的示意总回报处理，黄金、商品和房价是价格口径，房地产不含租金，因此不能直接当作同口径的可投资回报。加密在 2000 年并不存在，比特币在主权危机中的角色仍不稳定。中国资产还要另看国内政策。这里没有任何概率、阈值或买卖建议。</p>
-    </article>
-  </div>
-
-  <article class="panel" style="margin: 8px 0 12px;">
-    <h3>资料怎么用</h3>
-    <p>其中一份材料引用了国际货币基金组织 2026 年 10 月关于 AI 生态与金融稳定的研究、美联储理事 2026 年 11 月 16 日关于 AI 与金融稳定的演讲，以及美联储 2026 年 11 月金融稳定报告中的市场联系人意见。这些至多说明风险结构和传导渠道受到关注，不代表危机已经发生或必然发生；其中“受访者意见”尤其不能当成官方概率。请自行打开原文核对。历史对照包括 2000–2002 年互联网泡沫、2008 年金融危机、1970 年代滞胀与 2022 年的部分特征、1990 年代日本的资产负债表调整、2020 年 3 月流动性冲击，以及部分主权和汇率压力。它们是事后参照，不能证明能提前预测下一次。</p>
-  </article>
-
-  <p class="fineprint">起点为冲击开始时的指数 100。播放和拖动只改变观察时点，不改变已经生成的路径。本文件可完全离线打开。最后说明一次：这是教学用的情景比较工具，不构成任何投资建议。</p>
 </section>
 </main>
+
+<nav class="dock" aria-label="页面切换">
+  <div class="dock-pill">
+    <a class="dock-item" href="#诊断" data-screen="diagnose">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M9 6.5l1.2 1.2L13.2 5M9 12l1.2 1.2L13.2 10.5M8.5 18H18M5 6.5h.2M5 12h.2M5 18h.2"/></svg>
+      <span>诊断</span>
+    </a>
+    <a class="dock-item" href="#看板" data-screen="board">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.2-5 3 2.6L16.5 7 20 11M4 19h16"/></svg>
+      <span>看板</span>
+    </a>
+    <a class="dock-item" href="#策略" data-screen="strategy">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 3.5l7.5 2.6v6.2c0 4.4-3.2 7.6-7.5 9-4.3-1.4-7.5-4.6-7.5-9V6.1L12 3.5z"/></svg>
+      <span>策略</span>
+    </a>
+    <a class="dock-item" href="#对照" data-screen="compare">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M6 19V10M12 19V6M18 19v-5"/></svg>
+      <span>对照</span>
+    </a>
+    <a class="dock-item" href="#说明" data-screen="notes">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M8 4h6.5L18 7.5V20H8zM14.5 4v3.5H18M10 12h6M10 16h4"/></svg>
+      <span>说明</span>
+    </a>
+  </div>
+</nav>
+
 <div id="tip"></div>
 
 <div class="sync-mask" id="syncMask" hidden>
@@ -604,7 +639,7 @@ tr:last-child td { border-bottom: none; }
       <h2 id="syncTitle">同步当前判断</h2>
       <button class="btn" id="syncClose" type="button">关闭</button>
     </div>
-    <p class="lead">把每天发给你的判断文件导入，或直接粘贴同步稿。预览后需要你确认，才会改诊断勾选。这只是对照公开信息的教学判断，不是危机已经发生的结论，也不会自动选定路径。</p>
+    <p class="lead">导入判断文件或粘贴同步稿。预览后需要你确认，才会改诊断勾选。不会自动选定路径。</p>
     <div class="sync-import">
       <button class="btn primary" id="syncFileBtn" type="button">导入判断文件</button>
       <input type="file" id="syncFile" accept="application/json,.json,text/plain" hidden />
@@ -1060,6 +1095,15 @@ const state = {
   snapshot: null
 };
 const SNAP_KEY = "crisisDashboard.snapshot.v1";
+const SCREEN_KEY = "crisisDashboard.screen.v1";
+const SCREEN_LIST = [
+  { id: "diagnose", aliases: ["诊断", "diagnose"], label: "诊断" },
+  { id: "board", aliases: ["看板", "board"], label: "看板" },
+  { id: "strategy", aliases: ["策略", "strategy"], label: "策略" },
+  { id: "compare", aliases: ["对照", "compare"], label: "对照" },
+  { id: "notes", aliases: ["说明", "notes"], label: "说明" }
+];
+let currentScreen = "board";
 const SIGN_STATE_LABEL = {
   supported: "较支持",
   weak: "证据偏弱",
@@ -1276,30 +1320,47 @@ function renderSigns() {
 
 function renderSyncMeta() {
   const el = $("syncMeta");
-  if (!el) return;
+  const top = $("syncMetaTop");
   const remoteNew = pendingRemote && (!state.snapshot || pendingRemote.asOf !== state.snapshot.asOf);
+  let detail = "";
+  let compact = "";
+  let compactPending = false;
   if (remoteNew) {
-    el.innerHTML = `网页上已有 <b>${esc(pendingRemote.asOfLabel || pendingRemote.asOf)}</b> 的判断，尚未采用。<button type="button" id="syncPending">查看并采用</button>`;
-    const p = $("syncPending");
-    if (p) p.addEventListener("click", () => openSync(pendingRemote, false));
-    return;
-  }
-  if (state.snapshot) {
+    detail = `网页上已有 <b>${esc(pendingRemote.asOfLabel || pendingRemote.asOf)}</b> 的判断，尚未采用。<button type="button" id="syncPending">查看并采用</button>`;
+    compact = "有新判断未采用";
+    compactPending = true;
+  } else if (state.snapshot) {
     const label = state.snapshot.asOfLabel || state.snapshot.asOf || "";
-    el.innerHTML = `已采用 <b>${esc(label)}</b> 的判断。勾选仍可手改，不会自动选定路径。<button type="button" id="syncReview">查看依据</button><button type="button" id="syncRefresh">重新检查</button><button type="button" id="syncClear">清除同步标记</button>`;
+    detail = `已采用 <b>${esc(label)}</b> 的判断。勾选仍可手改，不会自动选定路径。<button type="button" id="syncReview">查看依据</button><button type="button" id="syncRefresh">重新检查</button><button type="button" id="syncClear">清除同步标记</button>`;
+    compact = `已采用 ${label}`;
+  } else if (location.protocol === "file:") {
+    detail = "本地打开时无法自动上网同步。用网页打开后会自动检查当天判断，也可在这里导入文件。";
+    compact = "未同步";
+  } else {
+    detail = "打开后会自动检查当天判断。点顶部「同步当前判断」，确认后再采用。";
+  }
+  if (el) {
+    el.innerHTML = detail;
+    const p = $("syncPending");
     const r = $("syncReview");
     const c = $("syncClear");
     const f = $("syncRefresh");
+    if (p) p.addEventListener("click", () => openSync(pendingRemote, false));
     if (r) r.addEventListener("click", () => openSync(state.snapshot, true));
     if (c) c.addEventListener("click", clearSnapshot);
     if (f) f.addEventListener("click", () => { openSync(null, false); checkRemoteSnapshot(false); });
-    return;
   }
-  if (location.protocol === "file:") {
-    el.innerHTML = "本地打开时无法自动上网同步。用 GitHub 上的网页打开后，会自动检查当天判断。也可在这里导入文件。";
-    return;
+  if (top) {
+    top.hidden = !compact;
+    top.classList.toggle("pending", compactPending);
+    if (compactPending) {
+      top.innerHTML = `<button type="button" id="syncPendingTop">${esc(compact)}</button>`;
+      const t = $("syncPendingTop");
+      if (t) t.addEventListener("click", () => openSync(pendingRemote, false));
+    } else {
+      top.textContent = compact;
+    }
   }
-  el.innerHTML = "网页版打开后会自动检查当天判断。点右上角也可立即同步，确认后再采用。";
 }
 
 function renderScenarios() {
@@ -1345,7 +1406,7 @@ function renderScenarios() {
     });
   });
   if (!state.signs.size) {
-    $("diagResult").textContent = "尚未勾选。下面八条路径都可以直接比较。";
+    $("diagResult").textContent = "尚未勾选。可直接到看板比较八条路径。";
   } else {
     const ranked = Object.keys(scores).sort((a, b) => scores[b] - scores[a]);
     const top = ranked.filter(id => scores[id] > 0).slice(0, 3).map(id => SCENARIOS[id].title);
@@ -1727,7 +1788,12 @@ function bind() {
     if (e.key === "ArrowRight") { state.month = Math.min(HORIZON, state.month + 1); $("monthRange").value = state.month; renderDynamic(); }
     if (e.key === "ArrowLeft") { state.month = Math.max(0, state.month - 1); $("monthRange").value = state.month; renderDynamic(); }
     if (e.key === " ") { e.preventDefault(); togglePlay(); }
+    if (e.key >= "1" && e.key <= "5" && SCREEN_LIST[Number(e.key) - 1]) {
+      e.preventDefault();
+      showScreen(SCREEN_LIST[Number(e.key) - 1].id);
+    }
   });
+  bindScreens();
   bindSync();
 }
 
@@ -1976,9 +2042,78 @@ function loadSavedSnapshot() {
   }
 }
 
+function hashToken() {
+  try { return decodeURIComponent((location.hash || "").replace(/^#/, "")).trim(); }
+  catch (e) { return (location.hash || "").replace(/^#/, "").trim(); }
+}
+
+function screenFromToken(token) {
+  const t = String(token || "").trim();
+  return SCREEN_LIST.find(s => s.id === t || s.aliases.includes(t) || s.label === t) || null;
+}
+
+function initialScreen() {
+  const fromHash = screenFromToken(hashToken());
+  if (fromHash) return fromHash.id;
+  try {
+    const saved = screenFromToken(localStorage.getItem(SCREEN_KEY) || "");
+    if (saved) return saved.id;
+  } catch (e) {}
+  return "board";
+}
+
+function syncHash(sc, replace) {
+  const want = sc.aliases[0];
+  if (hashToken() === want || hashToken() === sc.id) return;
+  const url = new URL(location.href);
+  url.hash = want;
+  if (replace) history.replaceState(null, "", url);
+  else history.pushState(null, "", url);
+}
+
+function showScreen(id, opts) {
+  const fromHash = !!(opts && opts.fromHash);
+  const replace = !!(opts && (opts.replace || opts.fromHash));
+  const sc = SCREEN_LIST.find(s => s.id === id) || SCREEN_LIST.find(s => s.id === "board");
+  currentScreen = sc.id;
+  document.querySelectorAll(".screen").forEach(el => {
+    el.hidden = el.dataset.screen !== sc.id;
+  });
+  document.querySelectorAll(".dock-item").forEach(el => {
+    const on = el.dataset.screen === sc.id;
+    el.classList.toggle("active", on);
+    if (on) el.setAttribute("aria-current", "page");
+    else el.removeAttribute("aria-current");
+  });
+  try { localStorage.setItem(SCREEN_KEY, sc.id); } catch (e) {}
+  if (!fromHash) syncHash(sc, replace);
+  window.scrollTo(0, 0);
+  if (sc.id === "board") {
+    requestAnimationFrame(() => { renderDynamic(); });
+  }
+}
+
+function bindScreens() {
+  document.querySelectorAll(".dock-item").forEach(el => {
+    el.addEventListener("click", e => {
+      const id = el.dataset.screen;
+      if (!id) return;
+      e.preventDefault();
+      showScreen(id);
+    });
+  });
+  const onHash = () => {
+    const sc = screenFromToken(hashToken());
+    showScreen(sc ? sc.id : "board", { fromHash: true });
+  };
+  window.addEventListener("hashchange", onHash);
+  window.addEventListener("popstate", onHash);
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   bind();
   loadSavedSnapshot();
+  showScreen(initialScreen(), { replace: true });
   renderAll();
   checkRemoteSnapshot(true);
 });
