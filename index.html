@@ -352,6 +352,65 @@ tr:last-child td { border-bottom: none; }
 .sync-actions { display: flex; gap: 10px; margin-top: 18px; }
 .sync-caveat { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
 
+.global-box {
+  background: #fff; border-radius: 18px;
+  padding: 16px 16px 14px; margin: 0 0 16px;
+}
+.global-box.placeholder {
+  background: transparent; padding: 0 0 12px; margin: 0 0 4px;
+}
+.global-box.placeholder p { color: var(--muted); font-size: 14px; line-height: 1.5; }
+.global-kicker {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  letter-spacing: -0.01em; margin: 0 0 8px;
+}
+.global-kicker span { color: var(--muted); font-weight: 500; }
+.global-text {
+  font-size: 14px; line-height: 1.55; color: var(--text);
+  margin: 0 0 12px; max-width: 52em;
+}
+.ind-strip {
+  display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px;
+}
+.ind-cell {
+  background: var(--bg); border-radius: 12px;
+  padding: 8px 8px 7px; min-width: 0;
+}
+.ind-name {
+  font-size: 11px; color: var(--muted); line-height: 1.3;
+  margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ind-state { font-size: 13px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; }
+.ind-cell.stressed .ind-state { color: var(--danger); }
+.ind-cell.weak .ind-state { color: #9a6700; }
+.ind-cell.stable .ind-state { color: var(--ok); }
+.ind-cell.mixed .ind-state { color: var(--text); }
+.ind-cell.unclear .ind-state { color: var(--faint); font-weight: 500; }
+
+.sign-group { margin: 0 0 16px; }
+.sign-group .group-label { margin: 0 0 8px; }
+.sign-group .checks { margin: 0; }
+#signBox .sign-group:last-child { margin-bottom: 0; }
+
+.board-global {
+  font-size: 13px; color: var(--muted); line-height: 1.45;
+  margin: 0 0 12px;
+}
+.board-global b { color: var(--text); font-weight: 600; }
+
+.sync-global { margin: 0 0 14px; }
+.sync-global .global-kicker { margin-bottom: 6px; }
+.sync-global .global-text { margin-bottom: 10px; font-size: 14px; }
+.sync-preview-group { margin: 0 0 4px; }
+.sync-preview-group .group-label { margin: 14px 0 0; }
+.sync-preview-group:first-child .group-label { margin-top: 0; }
+
+.sync-meta .channel-hint {
+  display: block; margin-top: 6px; color: var(--muted);
+}
+.sync-meta .channel-hint.fail { color: var(--danger); }
+
+
 .dock {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 45;
   display: flex; justify-content: center;
@@ -396,6 +455,7 @@ tr:last-child td { border-bottom: none; }
 @media (max-width: 980px) {
   .scenarios, .controls, .grid-2 { grid-template-columns: 1fr; }
   .checks, .form-grid, .preset-grid, .layers { grid-template-columns: 1fr; }
+  .ind-strip { grid-template-columns: repeat(4, 1fr); }
   .topbar-inner { height: auto; padding: 8px 0; }
   .top-note { text-align: left; flex-basis: 100%; order: 3; }
   .topbar-actions { margin-left: auto; }
@@ -405,6 +465,10 @@ tr:last-child td { border-bottom: none; }
   .chart-head { flex-direction: column; }
   .intro h2 { font-size: 24px; }
   .dock-item { min-width: 58px; padding: 6px 10px; }
+}
+
+@media (max-width: 640px) {
+  .ind-strip { grid-template-columns: repeat(2, 1fr); }
 }
 
   </style>
@@ -431,12 +495,14 @@ tr:last-child td { border-bottom: none; }
     </div>
     <div class="diag">
       <div class="sync-meta" id="syncMeta"></div>
-      <div class="checks" id="signBox"></div>
+      <div class="global-box" id="globalBox"></div>
+      <div id="signBox"></div>
       <div class="diag-result" id="diagResult">尚未勾选。可直接到看板比较八条路径。</div>
     </div>
   </section>
 
   <section class="screen screen-board" id="screen-board" data-screen="board">
+    <p class="board-global" id="boardGlobal" hidden></p>
     <div id="scenarios" class="scenarios"></div>
 
     <div class="controls">
@@ -598,6 +664,7 @@ tr:last-child td { border-bottom: none; }
         <li>阶段和时钟只是分析框架，事件不必按同样步骤发生；不要把不同路径的关键时点混在一张图里读。</li>
         <li>各路径冲击深度本身不同，比较时看形状和先后顺序，不要把终点高低当成预测优劣。</li>
         <li>没有发生概率，也没有通用仓位权重。</li>
+        <li>诊断现在也会看就业、房地产、银行和出口，并在采用当天判断后给出跨行业的全局判断。</li>
         <li>股票、债券按含利息或分红的示意总回报；黄金、商品和房价是价格口径，房地产不含租金，不能直接当成同口径可投资回报。</li>
       </ul>
     </article>
@@ -681,19 +748,79 @@ const ASSETS = [
 
 const DEFAULT_ON = ["cash", "gold", "ltBond", "equity", "ai", "btc"];
 
+const SIGN_GROUPS = [
+  { id: "equityLocal", label: "股权与局部" },
+  { id: "industryTrans", label: "行业与传导" },
+  { id: "realLabor", label: "实体与就业" },
+  { id: "creditLiq", label: "信用与流动性" },
+  { id: "pricesFx", label: "物价、汇率与主权" },
+  { id: "repair", label: "修复" }
+];
+
+const INDUSTRIES = [
+  { id: "tech", name: "科技与AI" },
+  { id: "banks", name: "银行与信用" },
+  { id: "property", name: "房地产" },
+  { id: "manufacturing", name: "制造业与资本开支" },
+  { id: "consumer", name: "消费与就业" },
+  { id: "energy", name: "能源与商品" },
+  { id: "trade", name: "贸易与出口" },
+  { id: "china", name: "国内信用与政策" }
+];
+
+const INDUSTRY_STATE_LABEL = {
+  stressed: "承压",
+  weak: "走弱",
+  stable: "尚稳",
+  mixed: "分化",
+  unclear: "证据不足"
+};
+
+const GLOBAL_LAYER_LABEL = {
+  equity: "股权层",
+  capex: "资本开支层",
+  credit: "信用层",
+  real: "实体层",
+  prices: "物价层",
+  fx: "汇率与资本流动",
+  liquidity: "流动性层",
+  repair: "修复层",
+  mixed: "多层并存",
+  unclear: "尚不清晰"
+};
+
+const GLOBAL_BREADTH_LABEL = {
+  concentrated: "仍较集中",
+  spreading: "正在扩散",
+  broad: "已较广泛",
+  unclear: "广度不明"
+};
+
+const SESSION_LABEL = {
+  overseas: "海外盘",
+  domestic: "国内盘"
+};
+
 const SIGNS = [
-  { id: "aiDrop", text: "AI 或高估值科技明显下跌", map: { local: 2, capex: 2, credit: 1, balance: 1, stagflation: 1, liquidity: 1, sovereign: 1, repair: 1 } },
-  { id: "broadOk", text: "就业、消费和银行信贷大体仍稳，损失主要留在股东之间", map: { local: 4, repair: 2 } },
-  { id: "capexCut", text: "资本开支、订单或相关供应链明显下修，并开始传到非 AI 行业", map: { capex: 4, balance: 2, credit: 1 } },
-  { id: "creditBreak", text: "融资断裂、违约、赎回或信用利差失控", map: { credit: 5, liquidity: 2 } },
-  { id: "dashCash", text: "下跌以周甚至日计算，优质资产也先被卖掉换现金", map: { liquidity: 5, credit: 3 } },
-  { id: "policyFast", text: "政策几乎立刻提供流动性、担保或大规模财政支持", map: { liquidity: 4, repair: 1 } },
-  { id: "debtMin", text: "企业或家庭转向还债和缩表，宽松之后信贷仍不扩张，物价低迷", map: { balance: 5 } },
-  { id: "stockBondDown", text: "股票和长期国债一起跌，通胀黏住，政策无法痛快放松", map: { stagflation: 5, sovereign: 2 } },
-  { id: "commodityUp", text: "能源、食品或关键商品因供给约束而上涨", map: { stagflation: 3 } },
-  { id: "havenFail", text: "风险资产下跌时，国债收益率不降反升，本币走弱", map: { sovereign: 5, stagflation: 1 } },
-  { id: "goldSold", text: "黄金先被卖掉换现金，而不是立刻保护组合", map: { credit: 2, liquidity: 3 } },
-  { id: "earnBack", text: "存活公司的现金流和订单开始回升，估值回到可计算的水平", map: { repair: 5, local: 1, capex: 1 } }
+  { id: "aiDrop", group: "equityLocal", groupLabel: "股权与局部", text: "AI 或高估值科技明显下跌", map: { local: 2, capex: 2, credit: 1, balance: 1, stagflation: 1, liquidity: 1, sovereign: 1, repair: 1 } },
+  { id: "broadOk", group: "equityLocal", groupLabel: "股权与局部", text: "就业、消费和银行信贷大体仍稳，损失主要留在股东之间", map: { local: 4, repair: 2 } },
+  { id: "capexCut", group: "industryTrans", groupLabel: "行业与传导", text: "资本开支、订单或相关供应链明显下修，并开始传到非 AI 行业", map: { capex: 4, balance: 2, credit: 1 } },
+  { id: "earningsCut", group: "industryTrans", groupLabel: "行业与传导", text: "多个行业同时下修盈利或订单，不只集中在科技", map: { capex: 4, credit: 2, balance: 2 } },
+  { id: "exportWeak", group: "industryTrans", groupLabel: "行业与传导", text: "出口、贸易或海外订单明显走弱", map: { capex: 3, balance: 3 } },
+  { id: "propertyStress", group: "industryTrans", groupLabel: "行业与传导", text: "房地产销售、开工、房价或相关融资明显恶化", map: { balance: 4, credit: 3, capex: 2 } },
+  { id: "laborBreak", group: "realLabor", groupLabel: "实体与就业", text: "就业或失业申请持续恶化", map: { capex: 3, credit: 2, balance: 3, stagflation: 2 } },
+  { id: "demandBreak", group: "realLabor", groupLabel: "实体与就业", text: "消费、零售或服务业需求明显走弱", map: { capex: 3, credit: 2, balance: 3, stagflation: 2 } },
+  { id: "debtMin", group: "realLabor", groupLabel: "实体与就业", text: "企业或家庭转向还债和缩表，宽松之后信贷仍不扩张，物价低迷", map: { balance: 5 } },
+  { id: "creditBreak", group: "creditLiq", groupLabel: "信用与流动性", text: "融资断裂、违约、赎回或信用利差失控", map: { credit: 5, liquidity: 2 } },
+  { id: "bankStress", group: "creditLiq", groupLabel: "信用与流动性", text: "银行股价、信贷标准或银行融资出现明显压力，但还没有全面断裂", map: { credit: 3, balance: 2, liquidity: 2 } },
+  { id: "dashCash", group: "creditLiq", groupLabel: "信用与流动性", text: "下跌以周甚至日计算，优质资产也先被卖掉换现金", map: { liquidity: 5, credit: 3 } },
+  { id: "goldSold", group: "creditLiq", groupLabel: "信用与流动性", text: "黄金先被卖掉换现金，而不是立刻保护组合", map: { credit: 2, liquidity: 3 } },
+  { id: "policyFast", group: "creditLiq", groupLabel: "信用与流动性", text: "政策几乎立刻提供流动性、担保或大规模财政支持", map: { liquidity: 4, repair: 1 } },
+  { id: "stockBondDown", group: "pricesFx", groupLabel: "物价、汇率与主权", text: "股票和长期国债一起跌，通胀黏住，政策无法痛快放松", map: { stagflation: 5, sovereign: 2 } },
+  { id: "commodityUp", group: "pricesFx", groupLabel: "物价、汇率与主权", text: "能源、食品或关键商品因供给约束而上涨", map: { stagflation: 3 } },
+  { id: "havenFail", group: "pricesFx", groupLabel: "物价、汇率与主权", text: "风险资产下跌时，国债收益率不降反升，本币走弱", map: { sovereign: 5, stagflation: 1 } },
+  { id: "fxOutflow", group: "pricesFx", groupLabel: "物价、汇率与主权", text: "资本外流、外汇储备下降或本币持续承压", map: { sovereign: 3, stagflation: 1 } },
+  { id: "earnBack", group: "repair", groupLabel: "修复", text: "存活公司的现金流和订单开始回升，估值回到可计算的水平", map: { repair: 5, local: 1, capex: 1 } }
 ];
 
 const PRESETS = [
@@ -1114,6 +1241,7 @@ let syncDraft = null;
 let syncPicks = new Set();
 const DEFAULT_SYNC_URL = "snapshot.json";
 let pendingRemote = null;
+let lastSyncCheck = null;
 let playTimer = null;
 
 function lerp(a, b, t) { return a + (b - a) * t; }
@@ -1296,18 +1424,122 @@ function signEntry(id) {
   return snap.signs[id] || null;
 }
 
+function formatShanghaiTime(d) {
+  if (!d) return "";
+  try {
+    return new Intl.DateTimeFormat("zh-CN", {
+      timeZone: "Asia/Shanghai",
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    }).format(d);
+  } catch (e) {
+    return "";
+  }
+}
+
+function completeIndustries(list) {
+  const byId = {};
+  (Array.isArray(list) ? list : []).forEach(item => {
+    if (item && item.id) byId[item.id] = item;
+  });
+  return INDUSTRIES.map(def => {
+    const item = byId[def.id] || {};
+    const state = INDUSTRY_STATE_LABEL[item.state] ? item.state : "unclear";
+    return {
+      id: def.id,
+      name: String(item.name || def.name),
+      state,
+      label: String(item.label || INDUSTRY_STATE_LABEL[state]),
+      note: String(item.note || "")
+    };
+  });
+}
+
+function normalizeGlobal(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const layer = GLOBAL_LAYER_LABEL[raw.layer] ? raw.layer : "unclear";
+  const breadth = GLOBAL_BREADTH_LABEL[raw.breadth] ? raw.breadth : "unclear";
+  return {
+    layer,
+    layerLabel: String(raw.layerLabel || GLOBAL_LAYER_LABEL[layer]),
+    breadth,
+    breadthLabel: String(raw.breadthLabel || GLOBAL_BREADTH_LABEL[breadth]),
+    text: String(raw.text || ""),
+    industries: completeIndustries(raw.industries)
+  };
+}
+
+function industryStripHtml(industries) {
+  return `<div class="ind-strip">${completeIndustries(industries).map(item => {
+    const tip = item.note ? ` title="${esc(item.note)}"` : "";
+    return `<div class="ind-cell ${item.state}"${tip}>
+      <div class="ind-name">${esc(item.name)}</div>
+      <div class="ind-state">${esc(item.label)}</div>
+    </div>`;
+  }).join("")}</div>`;
+}
+
+function globalKickerHtml(snap) {
+  const g = snap && snap.global;
+  if (!g) return "";
+  const session = snap.session && SESSION_LABEL[snap.session] ? SESSION_LABEL[snap.session] : "";
+  const bits = [g.layerLabel, g.breadthLabel].filter(Boolean);
+  const sess = session ? `<span>${esc(session)}</span> ` : "";
+  return `<div class="global-kicker">${sess}${esc(bits.join(" · "))}</div>`;
+}
+
+function renderGlobalBox() {
+  const el = $("globalBox");
+  if (!el) return;
+  const snap = state.snapshot;
+  const g = snap && snap.global;
+  if (!g) {
+    el.className = "global-box placeholder";
+    el.innerHTML = "<p>同步并采用当天判断后，这里会给出跨行业的全局判断。</p>";
+    return;
+  }
+  el.className = "global-box";
+  const text = g.text ? `<p class="global-text">${esc(g.text)}</p>` : "";
+  el.innerHTML = `${globalKickerHtml(snap)}${text}${industryStripHtml(g.industries)}`;
+}
+
+function renderBoardGlobal() {
+  const el = $("boardGlobal");
+  if (!el) return;
+  const g = state.snapshot && state.snapshot.global;
+  if (!g || !(g.layerLabel || g.breadthLabel)) {
+    el.hidden = true;
+    el.textContent = "";
+    return;
+  }
+  el.hidden = false;
+  const bits = [g.layerLabel, g.breadthLabel].filter(Boolean);
+  el.innerHTML = `跨行业判断：<b>${esc(bits.join(" · "))}</b>`;
+}
+
 function renderSigns() {
-  $("signBox").innerHTML = SIGNS.map(s => {
-    const entry = signEntry(s.id);
-    const st = entry && entry.state ? entry.state : "";
-    const pill = st ? `<span class="sign-pill ${st}">${SIGN_STATE_LABEL[st] || st}</span>` : "";
-    const note = entry && entry.note ? `<span class="sign-note">${esc(entry.note)}</span>` : "";
-    return `<label class="check">
-      <input type="checkbox" data-id="${s.id}" ${state.signs.has(s.id) ? "checked" : ""} />
-      <span>${s.text}${pill}${note}</span>
-    </label>`;
+  const box = $("signBox");
+  box.innerHTML = SIGN_GROUPS.map(g => {
+    const items = SIGNS.filter(s => s.group === g.id).map(s => {
+      const entry = signEntry(s.id);
+      const st = entry && entry.state ? entry.state : "";
+      const pill = st ? `<span class="sign-pill ${st}">${SIGN_STATE_LABEL[st] || st}</span>` : "";
+      const note = entry && entry.note ? `<span class="sign-note">${esc(entry.note)}</span>` : "";
+      return `<label class="check">
+        <input type="checkbox" data-id="${s.id}" ${state.signs.has(s.id) ? "checked" : ""} />
+        <span>${s.text}${pill}${note}</span>
+      </label>`;
+    }).join("");
+    if (!items) return "";
+    return `<div class="sign-group">
+      <div class="group-label">${esc(g.label)}</div>
+      <div class="checks">${items}</div>
+    </div>`;
   }).join("");
-  $("signBox").querySelectorAll("input").forEach(inp => {
+  box.querySelectorAll("input").forEach(inp => {
     inp.addEventListener("change", () => {
       if (inp.checked) state.signs.add(inp.dataset.id);
       else state.signs.delete(inp.dataset.id);
@@ -1315,6 +1547,7 @@ function renderSigns() {
       renderScenarios();
     });
   });
+  renderGlobalBox();
   renderSyncMeta();
 }
 
@@ -1338,6 +1571,12 @@ function renderSyncMeta() {
     compact = "未同步";
   } else {
     detail = "打开后会自动检查当天判断。点顶部「同步当前判断」，确认后再采用。";
+  }
+  if (lastSyncCheck && lastSyncCheck.ok === false && !(lastSyncCheck.fileProtocol)) {
+    const when = lastSyncCheck.at ? `（上次检查：${formatShanghaiTime(lastSyncCheck.at)}）` : "";
+    const fail = `没有读到网上的判断稿${when}。可稍后再试，或导入文件、粘贴同步稿。`;
+    if (detail) detail += `<span class="channel-hint fail">${fail}</span>`;
+    else detail = `<span class="channel-hint fail">${fail}</span>`;
   }
   if (el) {
     el.innerHTML = detail;
@@ -1724,6 +1963,7 @@ function renderDynamic() {
 function renderAll() {
   renderSigns();
   renderScenarios();
+  renderBoardGlobal();
   $("monthRange").value = state.month;
   renderDynamic();
 }
@@ -1846,7 +2086,8 @@ function normalizeSnapshot(raw) {
       sources
     };
   });
-  return {
+  const kept = new Set(["version", "kind", "asOf", "asOfLabel", "sessionNote", "summary", "closerPaths", "closerNote", "caveat", "signs", "session", "generatedAt", "global"]);
+  const out = {
     version: 1,
     kind: "crisis-dashboard-snapshot",
     asOf: String(raw.asOf),
@@ -1858,6 +2099,15 @@ function normalizeSnapshot(raw) {
     caveat: String(raw.caveat || "这是对公开信息的教学对照，不是在断言危机已经发生或即将发生，也不是投资建议。"),
     signs
   };
+  if (raw.session === "overseas" || raw.session === "domestic") out.session = raw.session;
+  if (raw.generatedAt) out.generatedAt = String(raw.generatedAt);
+  const global = normalizeGlobal(raw.global);
+  if (global) out.global = global;
+  Object.keys(raw).forEach(key => {
+    if (kept.has(key) || key in out) return;
+    out[key] = raw[key];
+  });
+  return out;
 }
 
 function showSyncError(msg) {
@@ -1898,28 +2148,40 @@ function renderSyncPreview(snap, fromApplied) {
   syncDraft = snap;
   syncPicks = new Set(SIGNS.filter(s => snap.signs[s.id] && snap.signs[s.id].apply).map(s => s.id));
   const closer = (snap.closerPaths || []).map(id => SCENARIOS[id] ? SCENARIOS[id].title : id).filter(Boolean);
+  const g = snap.global;
+  const globalBlock = g ? `
+    <div class="sync-global">
+      ${globalKickerHtml(snap)}
+      ${g.text ? `<p class="global-text">${esc(g.text)}</p>` : ""}
+      ${industryStripHtml(g.industries)}
+    </div>` : "";
   const head = `
     <div class="sync-summary">
       <b>${esc(snap.asOfLabel || snap.asOf)}</b>
       ${snap.sessionNote ? `<div class="sign-note">${esc(snap.sessionNote)}</div>` : ""}
       ${snap.summary ? `<p>${esc(snap.summary)}</p>` : ""}
+      ${globalBlock}
       ${closer.length ? `<p>材料认为更值得先对照：<b>${esc(closer.join("、"))}</b>。采用后只改勾选，不会自动跳到某条路径。</p>` : ""}
     </div>`;
-  const rows = SIGNS.map(s => {
-    const e = snap.signs[s.id];
-    const src = (e.sources || []).map(x => x.url
-      ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>`
-      : esc(x.title)).join(" · ");
-    return `<label class="sync-row">
-      <input type="checkbox" data-id="${s.id}" ${syncPicks.has(s.id) ? "checked" : ""} />
-      <span>
-        ${esc(s.text)}
-        <span class="sign-pill ${e.state}">${SIGN_STATE_LABEL[e.state]}</span>
-        ${e.evidence ? `<span class="sign-pill">${esc(e.evidence)}</span>` : ""}
-        ${e.note ? `<div class="why">${esc(e.note)}</div>` : ""}
-        ${src ? `<div class="src">${src}</div>` : ""}
-      </span>
-    </label>`;
+  const rows = SIGN_GROUPS.map(group => {
+    const items = SIGNS.filter(s => s.group === group.id).map(s => {
+      const e = snap.signs[s.id];
+      const src = (e.sources || []).map(x => x.url
+        ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>`
+        : esc(x.title)).join(" · ");
+      return `<label class="sync-row">
+        <input type="checkbox" data-id="${s.id}" ${syncPicks.has(s.id) ? "checked" : ""} />
+        <span>
+          ${esc(s.text)}
+          <span class="sign-pill ${e.state}">${SIGN_STATE_LABEL[e.state]}</span>
+          ${e.evidence ? `<span class="sign-pill">${esc(e.evidence)}</span>` : ""}
+          ${e.note ? `<div class="why">${esc(e.note)}</div>` : ""}
+          ${src ? `<div class="src">${src}</div>` : ""}
+        </span>
+      </label>`;
+    }).join("");
+    if (!items) return "";
+    return `<div class="sync-preview-group"><div class="group-label">${esc(group.label)}</div>${items}</div>`;
   }).join("");
   $("syncPreview").innerHTML = head + rows + `<p class="sync-caveat">${esc(snap.caveat)}</p>`;
   $("syncPreview").querySelectorAll("input[type=checkbox]").forEach(inp => {
@@ -1975,18 +2237,55 @@ function snapshotHref() {
   return u.toString();
 }
 
-async function fetchRemoteSnapshot() {
-  if (location.protocol === "file:") {
-    throw new Error("本地文件无法自动同步。请打开 GitHub 上的网页版，或在下方导入判断稿。");
+function syncFetchError(err) {
+  if (err && err.fileProtocol) {
+    return err.message || "本地文件无法自动同步。请打开 GitHub 上的网页版，或在下方导入判断稿。";
   }
-  const res = await fetch(snapshotHref(), { cache: "no-store" });
-  if (!res.ok) throw new Error("没有读到网上的判断稿，可先导入文件。");
+  const name = err && err.name;
+  const msg = (err && err.message) || "";
+  if (name === "AbortError" || /aborted|timeout/i.test(msg)) {
+    return "读取当天判断超时，已重试一次仍未成功。可稍后再试，或先导入文件、粘贴同步稿。";
+  }
+  if (!msg || /failed to fetch|networkerror|load failed|failed to load/i.test(msg)) {
+    return "没有读到网上的判断稿，已重试一次仍未成功。可稍后再试，或先导入文件、粘贴同步稿。";
+  }
+  return msg;
+}
+
+async function fetchWithTimeout(url, ms) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { cache: "no-store", signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchRemoteSnapshotOnce() {
+  if (location.protocol === "file:") {
+    const err = new Error("本地文件无法自动同步。请打开 GitHub 上的网页版，或在下方导入判断稿。");
+    err.fileProtocol = true;
+    throw err;
+  }
+  const res = await fetchWithTimeout(snapshotHref(), 8000);
+  if (!res.ok) throw new Error("没有读到网上的判断稿，可先导入文件或粘贴同步稿。");
   return normalizeSnapshot(extractJson(await res.text()));
+}
+
+async function fetchRemoteSnapshot() {
+  try {
+    return await fetchRemoteSnapshotOnce();
+  } catch (err) {
+    if (err && err.fileProtocol) throw err;
+    return await fetchRemoteSnapshotOnce();
+  }
 }
 
 async function checkRemoteSnapshot(auto) {
   try {
     const snap = await fetchRemoteSnapshot();
+    lastSyncCheck = { ok: true, at: new Date(), error: "", fileProtocol: false };
     pendingRemote = snap;
     if (auto) {
       renderSyncMeta();
@@ -1995,13 +2294,19 @@ async function checkRemoteSnapshot(auto) {
     showSyncError("");
     $("syncPaste").value = JSON.stringify(snap, null, 2);
     renderSyncPreview(snap, false);
+    renderSyncMeta();
   } catch (err) {
+    lastSyncCheck = {
+      ok: false,
+      at: new Date(),
+      error: syncFetchError(err),
+      fileProtocol: !!(err && err.fileProtocol)
+    };
     if (!auto) {
       pendingRemote = pendingRemote || null;
-      showSyncError(err.message || "自动同步暂不可用，可导入文件或粘贴同步稿。");
-    } else {
-      renderSyncMeta();
+      showSyncError(lastSyncCheck.error);
     }
+    renderSyncMeta();
   }
 }
 
