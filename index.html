@@ -665,6 +665,7 @@ tr:last-child td { border-bottom: none; }
         <li>各路径冲击深度本身不同，比较时看形状和先后顺序，不要把终点高低当成预测优劣。</li>
         <li>没有发生概率，也没有通用仓位权重。</li>
         <li>诊断现在也会看就业、房地产、银行和出口，并在采用当天判断后给出跨行业的全局判断。</li>
+        <li>新增诊断项同样按每日两次的官方或原始数据核对，证据不足就先空着。</li>
         <li>股票、债券按含利息或分红的示意总回报；黄金、商品和房价是价格口径，房地产不含租金，不能直接当成同口径可投资回报。</li>
       </ul>
     </article>
@@ -752,6 +753,7 @@ const SIGN_GROUPS = [
   { id: "equityLocal", label: "股权与局部" },
   { id: "industryTrans", label: "行业与传导" },
   { id: "realLabor", label: "实体与就业" },
+  { id: "ratesPolicy", label: "利率、政策与金融条件" },
   { id: "creditLiq", label: "信用与流动性" },
   { id: "pricesFx", label: "物价、汇率与主权" },
   { id: "repair", label: "修复" }
@@ -808,11 +810,17 @@ const SIGNS = [
   { id: "earningsCut", group: "industryTrans", groupLabel: "行业与传导", text: "多个行业同时下修盈利或订单，不只集中在科技", map: { capex: 4, credit: 2, balance: 2 } },
   { id: "exportWeak", group: "industryTrans", groupLabel: "行业与传导", text: "出口、贸易或海外订单明显走弱", map: { capex: 3, balance: 3 } },
   { id: "propertyStress", group: "industryTrans", groupLabel: "行业与传导", text: "房地产销售、开工、房价或相关融资明显恶化", map: { balance: 4, credit: 3, capex: 2 } },
+  { id: "inventoryGlut", group: "industryTrans", groupLabel: "行业与传导", text: "库存上升而新订单或需求走弱，开始转为去库压力", map: { capex: 3, balance: 2 } },
   { id: "laborBreak", group: "realLabor", groupLabel: "实体与就业", text: "就业或失业申请持续恶化", map: { capex: 3, credit: 2, balance: 3, stagflation: 2 } },
   { id: "demandBreak", group: "realLabor", groupLabel: "实体与就业", text: "消费、零售或服务业需求明显走弱", map: { capex: 3, credit: 2, balance: 3, stagflation: 2 } },
   { id: "debtMin", group: "realLabor", groupLabel: "实体与就业", text: "企业或家庭转向还债和缩表，宽松之后信贷仍不扩张，物价低迷", map: { balance: 5 } },
+  { id: "curveInvert", group: "ratesPolicy", groupLabel: "利率、政策与金融条件", text: "主要国债收益率曲线持续倒挂", map: { capex: 3, credit: 2, balance: 1 } },
+  { id: "tightReal", group: "ratesPolicy", groupLabel: "利率、政策与金融条件", text: "实际利率仍然偏高，或整体金融条件明显偏紧", map: { stagflation: 3, capex: 2, credit: 2, balance: 2 } },
+  { id: "easeFail", group: "ratesPolicy", groupLabel: "利率、政策与金融条件", text: "已经降息或放松，但贷款、社融或信贷需求仍然偏弱，政策传导不畅", map: { balance: 4, capex: 2 } },
+  { id: "dollarSqueeze", group: "ratesPolicy", groupLabel: "利率、政策与金融条件", text: "美元流动性明显收紧，美元融资成本或美元指数急升，并开始传到其他市场", map: { liquidity: 3, sovereign: 3, credit: 2 } },
   { id: "creditBreak", group: "creditLiq", groupLabel: "信用与流动性", text: "融资断裂、违约、赎回或信用利差失控", map: { credit: 5, liquidity: 2 } },
   { id: "bankStress", group: "creditLiq", groupLabel: "信用与流动性", text: "银行股价、信贷标准或银行融资出现明显压力，但还没有全面断裂", map: { credit: 3, balance: 2, liquidity: 2 } },
+  { id: "spreadWiden", group: "creditLiq", groupLabel: "信用与流动性", text: "信用利差明显走阔，但融资市场还没有冻结", map: { credit: 3, liquidity: 2, capex: 1 } },
   { id: "dashCash", group: "creditLiq", groupLabel: "信用与流动性", text: "下跌以周甚至日计算，优质资产也先被卖掉换现金", map: { liquidity: 5, credit: 3 } },
   { id: "goldSold", group: "creditLiq", groupLabel: "信用与流动性", text: "黄金先被卖掉换现金，而不是立刻保护组合", map: { credit: 2, liquidity: 3 } },
   { id: "policyFast", group: "creditLiq", groupLabel: "信用与流动性", text: "政策几乎立刻提供流动性、担保或大规模财政支持", map: { liquidity: 4, repair: 1 } },
@@ -820,6 +828,9 @@ const SIGNS = [
   { id: "commodityUp", group: "pricesFx", groupLabel: "物价、汇率与主权", text: "能源、食品或关键商品因供给约束而上涨", map: { stagflation: 3 } },
   { id: "havenFail", group: "pricesFx", groupLabel: "物价、汇率与主权", text: "风险资产下跌时，国债收益率不降反升，本币走弱", map: { sovereign: 5, stagflation: 1 } },
   { id: "fxOutflow", group: "pricesFx", groupLabel: "物价、汇率与主权", text: "资本外流、外汇储备下降或本币持续承压", map: { sovereign: 3, stagflation: 1 } },
+  { id: "coreSticky", group: "pricesFx", groupLabel: "物价、汇率与主权", text: "核心通胀或服务价格仍然黏滞，通胀预期没有回到目标附近", map: { stagflation: 4, sovereign: 1 } },
+  { id: "priceSlack", group: "pricesFx", groupLabel: "物价、汇率与主权", text: "物价或通胀预期明显回落，更像需求不足而不是供给紧张", map: { balance: 3, capex: 2, credit: 1, repair: 1 } },
+  { id: "fiscalStress", group: "pricesFx", groupLabel: "物价、汇率与主权", text: "财政融资明显变难，或主权、地方隐性债务出现再融资压力", map: { sovereign: 4, balance: 2 } },
   { id: "earnBack", group: "repair", groupLabel: "修复", text: "存活公司的现金流和订单开始回升，估值回到可计算的水平", map: { repair: 5, local: 1, capex: 1 } }
 ];
 
